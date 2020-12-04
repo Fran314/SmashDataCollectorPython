@@ -2,12 +2,12 @@ import time
 import numpy
 import sys
 import pytesseract
-import cv2
+from cv2 import cv2
 
 
 #--- INITIALIZATION ---#
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 t = time.time()
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 #---   ---#
 
 
@@ -82,6 +82,17 @@ def getNameRectangle(data, pos_x, is_winner):
 
 def getTimeRectangle(data, pos_x):
     return polarizeImage(data[TIME_Y : (TIME_Y + TIME_HEIGHT), pos_x : (pos_x + TIME_WIDTH)])
+
+
+def optimalAlignError(arg0, arg1):
+    for i in range(len(arg0)):
+        for j in range(len(arg1)):
+            if(i)
+            if (i == j):
+                p_ij = 0
+            else:
+                p_ij = 1
+            
 #---   ---#
 
 
