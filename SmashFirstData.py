@@ -1,17 +1,36 @@
+import time
 import numpy
-from numpy import inf
 import sys
 import pytesseract
 import cv2
-import math
 
 
 #--- INITIALIZATION ---#
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
+t = time.time()
 #---   ---#
 
 
 #--- CONSTANTS ---#
+CHARACTER_NAMES = ["MARIO", "DONKEY KONG", "LINK", "SAMUS", "SAMUS OSCURA",
+                    "YOSHI", "KIRBY", "FOX", "PIKACHU", "LUIGI", "NESS",
+                    "CAPTAIN FALCON", "JIGGLYPUFF", "PEACH", "DAISY", "BOWSER",
+                    "ICE CLIMBERS", "SHEIK", "ZELDA", "DR. MARIO", "PICHU",
+                    "FALCO", "MARTH", "LUCINA", "LINK BAMBINO", "GANONDORF",
+                    "MEWTWO", "ROY", "CHROM", "MR. GAME & WATCH", "META KNIGHT",
+                    "PIT", "PIT OSCURO", "SAMUS TUTA ZERO", "WARIO", "SNAKE",
+                    "IKE", "ALLENATORE DI POKÉMON", "DIDDY KONG", "LUCAS",
+                    "SONIC", "KING DEDEDE", "OLIMAR", "LUCARIO", "R.O.B.",
+                    "LINK CARTONE", "WOLF", "ABITANTE", "MEGA MAN",
+                    "TRAINER DI WII FIT", "ROSALINDA E SFAVILLOTTO",
+                    "LITTLE MAC", "GRENINJA", "GUERRIERO MII", "PALUTENA",
+                    "PAC-MAN", "DARAEN", "SHULK", "BOWSER JUNIOR",
+                    "DUO DUCK HUNT", "RYU", "KEN", "CLOUD", "CORRIN",
+                    "BAYONETTA", "INKLING", "RIDLEY", "SIMON", "RICHTER",
+                    "KING K. ROOL", "FUFFI", "INCINEROAR", "PIANTA PIRANHA",
+                    "JOKER", "EROE", "BANJO E KAZOOIE", "TERRY", "BYLETH",
+                    "MIN MIN", "STEVE"]
+
 IMAGE_POLARIZATION_TRESHOLD = 40
 
 FIRST_COL = numpy.array([251, 255, 0, 255])
@@ -23,10 +42,19 @@ NAME_WIDTH = 226 # Width of the name rectangle
 NAME_HEIGHT = 77 # Height of the name rectangle
 
 G1_NAME_X = 20 # X position of the name rectangle for G1
-G2_NAME_X = 441 # X position of the name rectangle for G1
-G3_NAME_X = 859 # X position of the name rectangle for G1
+G2_NAME_X = 441 # X position of the name rectangle for G2
+G3_NAME_X = 859 # X position of the name rectangle for G3
 W_NAME_Y = 44 # Y position of the name rectangle for the winner
 L_NAME_Y = 28 # Y position of the name rectangle for a loser
+
+# "Time rectangle" = the rectangle containing the time the player survived
+TIME_WIDTH = 200 # Width of the time rectangle
+TIME_HEIGHT = 90 # Height of the time rectangle
+
+TIME_Y = 391 # Y position of the time rectangle
+G1_TIME_X = 198 # X position of the time rectangle for G1
+G2_TIME_X = 614 # X position of the time rectangle for G2
+G3_TIME_X = 1033 # X position of the time rectangle for G3
 #---   ---#
 
 
@@ -51,10 +79,14 @@ def getNameRectangle(data, pos_x, is_winner):
 
     return polarizeImage(name_rect)
 
+
+def getTimeRectangle(data, pos_x):
+    return polarizeImage(data[TIME_Y : (TIME_Y + TIME_HEIGHT), pos_x : (pos_x + TIME_WIDTH)])
 #---   ---#
 
 
-data_source = r'D:\Utente\Desktop\data.jpg'
+data_source = r'C:\Users\franc\Documents\Pyzo\SmashDataAnalyzer\data.jpg'
+#data_source = r'D:\Utente\Desktop\data.jpg'
 data = cv2.imread(data_source, flags=cv2.IMREAD_UNCHANGED)
 data = cv2.cvtColor(data, cv2.COLOR_BGR2RGBA)
 
@@ -75,16 +107,12 @@ G1_character = getNameRectangle(data, G1_NAME_X, G1_pos)
 G2_character = getNameRectangle(data, G2_NAME_X, G2_pos)
 G3_character = getNameRectangle(data, G3_NAME_X, G3_pos)
 
-cv2.imshow('G1', G1_character)
-#cv2.waitKey(1000)
-#cv2.destroyAllWindows()
-cv2.imshow('G2', G2_character)
-#cv2.waitKey(1000)
-#cv2.destroyAllWindows()
-cv2.imshow('G3', G3_character)
-#cv2.waitKey(1000)
-#cv2.destroyAllWindows()
+G1_time = getTimeRectangle(data, G1_TIME_X)
+G2_time = getTimeRectangle(data, G2_TIME_X)
+G3_time = getTimeRectangle(data, G3_TIME_X)
 
-print("G1: %s - %s" %(G1_pos, pytesseract.image_to_string(G1_character)))
-print("G2: %s - %s" %(G2_pos, pytesseract.image_to_string(G2_character)))
-print("G3: %s - %s" %(G3_pos, pytesseract.image_to_string(G3_character)))
+print("G1: %s [%s] - %s" %(G1_pos, pytesseract.image_to_string(G1_time), pytesseract.image_to_string(G1_character)))
+print("G2: %s [%s] - %s" %(G2_pos, pytesseract.image_to_string(G2_time), pytesseract.image_to_string(G2_character)))
+print("G3: %s [%s] - %s" %(G3_pos, pytesseract.image_to_string(G3_time), pytesseract.image_to_string(G3_character)))
+
+print("elapsed time: %.3f s" % (time.time() - t))
