@@ -83,7 +83,7 @@ def getNameRectangle(data, pos_x, is_winner):
 def getTimeRectangle(data, pos_x):
     return polarizeImage(data[TIME_Y : (TIME_Y + TIME_HEIGHT), pos_x : (pos_x + TIME_WIDTH)])
 
-
+'''
 def optimalAlignError(arg0, arg1):
     for i in range(len(arg0)):
         for j in range(len(arg1)):
@@ -92,7 +92,7 @@ def optimalAlignError(arg0, arg1):
                 p_ij = 0
             else:
                 p_ij = 1
-            
+'''
 #---   ---#
 
 
