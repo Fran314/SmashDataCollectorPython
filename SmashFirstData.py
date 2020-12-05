@@ -86,7 +86,7 @@ def getName(data, pos_x, is_winner):
 
 
 def getTimeRectangle(data, pos_x):
-    return polarizeImage(data[TIME_Y : (TIME_Y + TIME_HEIGHT), pos_x : (pos_x + TIME_WIDTH)])
+    return cv2.resize(polarizeImage(data[TIME_Y : (TIME_Y + TIME_HEIGHT), pos_x : (pos_x + TIME_WIDTH)]), (2*TIME_WIDTH, 2*TIME_HEIGHT))
 
 
 def normalizeName(arg):
