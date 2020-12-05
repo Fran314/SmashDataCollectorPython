@@ -4,7 +4,6 @@ import sys
 import pytesseract
 from cv2 import cv2
 
-
 #--- INITIALIZATION ---#
 t = time.time()
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
@@ -71,33 +70,60 @@ def polarizeImage(image_to_polarize):
     return image_to_polarize
 
 
-def getNameRectangle(data, pos_x, is_winner):
+def getName(data, pos_x, is_winner):
     if(is_winner == 1):
         name_rect = data[W_NAME_Y : (W_NAME_Y + NAME_HEIGHT), pos_x : (pos_x + NAME_WIDTH)]
     else:
         name_rect = data[L_NAME_Y : (L_NAME_Y + NAME_HEIGHT), pos_x : (pos_x + NAME_WIDTH)]
 
-    return polarizeImage(name_rect)
+    name_rect = polarizeImage(name_rect)
+    name = normalizeName(pytesseract.image_to_string(name_rect))
+    character_name_errors = numpy.zeros(len(CHARACTER_NAMES), dtype=int)
+    for i in range(len(CHARACTER_NAMES)):
+        character_name_errors[i] = optimalAlignError(name, CHARACTER_NAMES[i])
+    
+    return CHARACTER_NAMES[numpy.argmin(character_name_errors)]
 
 
 def getTimeRectangle(data, pos_x):
     return polarizeImage(data[TIME_Y : (TIME_Y + TIME_HEIGHT), pos_x : (pos_x + TIME_WIDTH)])
 
-'''
+
+def normalizeName(arg):
+    to_return = ""
+    for c in arg:
+        if((ord(c) >= 65 and ord(c) <= 90) or (ord(c) == 32)):
+            to_return += c
+        elif(ord(c) >= 97 and ord(c) <= 122):
+            to_return += chr(ord(c) - 32)
+    
+    return to_return
+
+
+def normalizeTime(arg):
+    to_return = ""
+    for c in arg:
+        if((ord(c) >= 48 and ord(c) <= 58)):
+            to_return += c
+    
+    return to_return
+
+
 def optimalAlignError(arg0, arg1):
+    curr_buffer = numpy.array(range(len(arg1) + 1))
     for i in range(len(arg0)):
+        brev_buffer = numpy.copy(curr_buffer)
+        curr_buffer = numpy.zeros(len(arg1) + 1, dtype=int)
+        curr_buffer[0] = i+1
         for j in range(len(arg1)):
-            if(i)
-            if (i == j):
-                p_ij = 0
-            else:
-                p_ij = 1
-'''
+            pij = 0 if(arg0[i] == arg1[j]) else 1
+            curr_buffer[j+1] = min(brev_buffer[j] + pij, curr_buffer[j] + 1, brev_buffer[j+1] + 1)
+
+    return curr_buffer[len(arg1)]
 #---   ---#
 
-
-data_source = r'C:\Users\franc\Documents\Pyzo\SmashDataAnalyzer\data.jpg'
-#data_source = r'D:\Utente\Desktop\data.jpg'
+#data_source = r'C:\Users\franc\Documents\Pyzo\SmashDataAnalyzer\data.jpg'
+data_source = r'D:\Utente\Desktop\data.jpg'
 data = cv2.imread(data_source, flags=cv2.IMREAD_UNCHANGED)
 data = cv2.cvtColor(data, cv2.COLOR_BGR2RGBA)
 
@@ -114,16 +140,16 @@ G2_pos = numpy.argmin(numpy.array([numpy.linalg.norm(G2_col - FIRST_COL), numpy.
 G3_col = data[44,1191]
 G3_pos = numpy.argmin(numpy.array([numpy.linalg.norm(G3_col - FIRST_COL), numpy.linalg.norm(G3_col - SECOND_COL), numpy.linalg.norm(G3_col - THIRD_COL)]))+1
 
-G1_character = getNameRectangle(data, G1_NAME_X, G1_pos)
-G2_character = getNameRectangle(data, G2_NAME_X, G2_pos)
-G3_character = getNameRectangle(data, G3_NAME_X, G3_pos)
+G1_character = getName(data, G1_NAME_X, G1_pos)
+G2_character = getName(data, G2_NAME_X, G2_pos)
+G3_character = getName(data, G3_NAME_X, G3_pos)
 
 G1_time = getTimeRectangle(data, G1_TIME_X)
 G2_time = getTimeRectangle(data, G2_TIME_X)
 G3_time = getTimeRectangle(data, G3_TIME_X)
 
-print("G1: %s [%s] - %s" %(G1_pos, pytesseract.image_to_string(G1_time), pytesseract.image_to_string(G1_character)))
-print("G2: %s [%s] - %s" %(G2_pos, pytesseract.image_to_string(G2_time), pytesseract.image_to_string(G2_character)))
-print("G3: %s [%s] - %s" %(G3_pos, pytesseract.image_to_string(G3_time), pytesseract.image_to_string(G3_character)))
+print("G1: %s [%s] - %s" %(G1_pos, normalizeTime(pytesseract.image_to_string(G1_time)), G1_character))
+print("G2: %s [%s] - %s" %(G2_pos, normalizeTime(pytesseract.image_to_string(G2_time)), G2_character))
+print("G3: %s [%s] - %s" %(G3_pos, normalizeTime(pytesseract.image_to_string(G3_time)), G3_character))
 
 print("elapsed time: %.3f s" % (time.time() - t))
