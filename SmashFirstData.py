@@ -232,5 +232,5 @@ for i in range(PLAYERS):
 
 
 #--- CONCLUSION ---#
-print("elapsed time: %.3f s" % (time.time() - t))
+print(f'elapsed time: {(time.time() - t):.3f} s')
 #--- ---#
