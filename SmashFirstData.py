@@ -108,17 +108,26 @@ CHARACTER_NAMES = [["MARIO",					"MARIO"],
 
 IMAGE_POLARIZATION_TRESHOLD = 40
 
-FIRST_COL = numpy.array([251, 255, 0, 255])
-SECOND_COL = numpy.array([204, 204, 204, 255])
-THIRD_COL = numpy.array([240, 150, 12, 255])
+PLAYERS = 3 # Number of players
+
+FIRST_COL = numpy.array([251, 255, 0, 255]) # Color of the first place #1 icon
+SECOND_COL = numpy.array([204, 204, 204, 255]) # Color of the second place #2 icon
+THIRD_COL = numpy.array([240, 150, 12, 255]) # Color of the third place #3 icon
+
+# "Sample point" = the pixel sampled to determine the position of each player based
+#   on the colour of the pixel (see previous constants)
+SAMPLE_POINT_Y = 44 # Y position of the sample point for every player
+SAMPLE_POINT_Xs = [354, # X position of the sample point for G1
+                    773, # X position of the sample point for G2
+                    1191] # X position of the sample point for G3
 
 # "Name rectangle" = the rectanlge containing the name of the caracter
 NAME_WIDTH = 226 # Width of the name rectangle
 NAME_HEIGHT = 77 # Height of the name rectangle
 
-G1_NAME_X = 20 # X position of the name rectangle for G1
-G2_NAME_X = 441 # X position of the name rectangle for G2
-G3_NAME_X = 859 # X position of the name rectangle for G3
+NAME_Xs = [20,      # X position of the name rectangle for G1
+            441,    # X position of the name rectangle for G2
+            859]    # X position of the name rectangle for G3
 W_NAME_Y = 44 # Y position of the name rectangle for the winner
 L_NAME_Y = 28 # Y position of the name rectangle for a loser
 
@@ -127,9 +136,9 @@ TIME_WIDTH = 200 # Width of the time rectangle
 TIME_HEIGHT = 90 # Height of the time rectangle
 
 TIME_Y = 391 # Y position of the time rectangle
-G1_TIME_X = 198 # X position of the time rectangle for G1
-G2_TIME_X = 614 # X position of the time rectangle for G2
-G3_TIME_X = 1033 # X position of the time rectangle for G3
+TIME_Xs = [198,     # X position of the time rectangle for G1
+            614,    # X position of the time rectangle for G2
+            1033]   # X position of the time rectangle for G3
 #---   ---#
 
 
@@ -199,35 +208,26 @@ def optimalAlignError(arg0, arg1):
 #---   ---#
 
 
-data_source = r'C:\Users\franc\Desktop\data.jpg'
+data_source = r'C:\Users\franc\Desktop\data_first.jpg'
 #data_source = r'D:\Utente\Desktop\data.jpg'
 data = cv2.imread(data_source, flags=cv2.IMREAD_UNCHANGED)
 data = cv2.cvtColor(data, cv2.COLOR_BGR2RGBA)
 
+positions = []
+for i in range(PLAYERS):
+    col = data[SAMPLE_POINT_Y, SAMPLE_POINT_Xs[i]]
+    positions.append(numpy.argmin(numpy.array([numpy.linalg.norm(col - FIRST_COL), numpy.linalg.norm(col - SECOND_COL), numpy.linalg.norm(col - THIRD_COL)]))+1)
 
-#354, 44
-G1_col = data[44,354]
-G1_pos = numpy.argmin(numpy.array([numpy.linalg.norm(G1_col - FIRST_COL), numpy.linalg.norm(G1_col - SECOND_COL), numpy.linalg.norm(G1_col - THIRD_COL)]))+1
+characters = []
+for i in range(PLAYERS):
+    characters.append(getName(data, NAME_Xs[i], positions[i]))
 
-#773, 44
-G2_col = data[44,773]
-G2_pos = numpy.argmin(numpy.array([numpy.linalg.norm(G2_col - FIRST_COL), numpy.linalg.norm(G2_col - SECOND_COL), numpy.linalg.norm(G2_col - THIRD_COL)]))+1
+times = []
+for i in range(PLAYERS):
+    times.append(getTimeRectangle(data, TIME_Xs[i]))
 
-#1191, 44
-G3_col = data[44,1191]
-G3_pos = numpy.argmin(numpy.array([numpy.linalg.norm(G3_col - FIRST_COL), numpy.linalg.norm(G3_col - SECOND_COL), numpy.linalg.norm(G3_col - THIRD_COL)]))+1
-
-G1_character = getName(data, G1_NAME_X, G1_pos)
-G2_character = getName(data, G2_NAME_X, G2_pos)
-G3_character = getName(data, G3_NAME_X, G3_pos)
-
-G1_time = getTimeRectangle(data, G1_TIME_X)
-G2_time = getTimeRectangle(data, G2_TIME_X)
-G3_time = getTimeRectangle(data, G3_TIME_X)
-
-print("G1: %s [%s] - %s" %(G1_pos, normalizeTime(pytesseract.image_to_string(G1_time)), G1_character))
-print("G2: %s [%s] - %s" %(G2_pos, normalizeTime(pytesseract.image_to_string(G2_time)), G2_character))
-print("G3: %s [%s] - %s" %(G3_pos, normalizeTime(pytesseract.image_to_string(G3_time)), G3_character))
+for i in range(PLAYERS):
+    print(f'G{i+1}: {positions[i]} [{normalizeTime(pytesseract.image_to_string(times[i]))}] - {characters[i]}')
 
 
 #--- CONCLUSION ---#

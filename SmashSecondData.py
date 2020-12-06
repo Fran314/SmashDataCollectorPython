@@ -12,7 +12,10 @@ t = time.time()
 # "Anchor point" = the top left corner of the subimage used to identify
 #   the position of the data. In this case we're using the rectangle
 #   containing the text "Autodistruzioni" as an anchor point
-G1_AP_X = 43 # Y position of the anchor point for G1
+
+PLAYERS = 1
+
+AP_Xs = [43] # X position of the anchor point for G1
 #---   ---#
 
 
@@ -62,18 +65,25 @@ def getAnchorPoint(data, pos_x, stencil):
 #stencil_source = r'D:\Utente\Desktop\stencil.png'
 #data_source = r'D:\Utente\Desktop\data.jpg'
 data_source = r'C:\Users\franc\Desktop\data.jpg'
-G1_ap_stencil_source = r'C:\Users\franc\Desktop\G1_ap_stencil.png'
+ap_stencil_sources = []
+for i in range(PLAYERS):
+    ap_stencil_sources.append(r'C:\Users\franc\Desktop\G' + str(i+1) + r'_ap_stencil.png')
 
 data = cv2.imread(data_source, flags=cv2.IMREAD_UNCHANGED)
 data = cv2.cvtColor(data, cv2.COLOR_BGR2RGBA)
 
-# G1 anchor point stencil
-G1_ap_stencil = cv2.imread(G1_ap_stencil_source, flags=cv2.IMREAD_UNCHANGED)
-G1_ap_stencil = cv2.cvtColor(G1_ap_stencil, cv2.COLOR_BGR2RGBA)
+ap_stencils = []
+for i in range(PLAYERS):
+    image = cv2.imread(ap_stencil_sources[i], flags=cv2.IMREAD_UNCHANGED)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGBA)
+    ap_stencils.append(image)
 
-G1_ap = getAnchorPoint(data, G1_AP_X, G1_ap_stencil)
+anchor_points = []
+for i in range(PLAYERS):
+    anchor_points.append(getAnchorPoint(data, AP_Xs[i], ap_stencils[i]))
 
-print("G1 anchor point at %s" %(G1_ap))
+for i in range(PLAYERS):
+    print(f'G{i+1} anchor point at {anchor_points[i]}')
 
 
 #--- CONCLUSION ---#
