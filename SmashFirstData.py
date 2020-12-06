@@ -122,8 +122,8 @@ def optimalAlignError(arg0, arg1):
     return curr_buffer[len(arg1)]
 #---   ---#
 
-#data_source = r'C:\Users\franc\Documents\Pyzo\SmashDataAnalyzer\data.jpg'
-data_source = r'D:\Utente\Desktop\data.jpg'
+data_source = r'C:\Users\franc\Desktop\data.jpg'
+#data_source = r'D:\Utente\Desktop\data.jpg'
 data = cv2.imread(data_source, flags=cv2.IMREAD_UNCHANGED)
 data = cv2.cvtColor(data, cv2.COLOR_BGR2RGBA)
 
