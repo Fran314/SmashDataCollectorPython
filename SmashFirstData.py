@@ -11,24 +11,100 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 
 
 #--- CONSTANTS ---#
-CHARACTER_NAMES = ["MARIO", "DONKEY KONG", "LINK", "SAMUS", "SAMUS OSCURA",
-                    "YOSHI", "KIRBY", "FOX", "PIKACHU", "LUIGI", "NESS",
-                    "CAPTAIN FALCON", "JIGGLYPUFF", "PEACH", "DAISY", "BOWSER",
-                    "ICE CLIMBERS", "SHEIK", "ZELDA", "DR. MARIO", "PICHU",
-                    "FALCO", "MARTH", "LUCINA", "LINK BAMBINO", "GANONDORF",
-                    "MEWTWO", "ROY", "CHROM", "MR. GAME & WATCH", "META KNIGHT",
-                    "PIT", "PIT OSCURO", "SAMUS TUTA ZERO", "WARIO", "SNAKE",
-                    "IKE", "ALLENATORE DI POKÉMON", "DIDDY KONG", "LUCAS",
-                    "SONIC", "KING DEDEDE", "OLIMAR", "LUCARIO", "R.O.B.",
-                    "LINK CARTONE", "WOLF", "ABITANTE", "MEGA MAN",
-                    "TRAINER DI WII FIT", "ROSALINDA E SFAVILLOTTO",
-                    "LITTLE MAC", "GRENINJA", "GUERRIERO MII", "PALUTENA",
-                    "PAC-MAN", "DARAEN", "SHULK", "BOWSER JUNIOR",
-                    "DUO DUCK HUNT", "RYU", "KEN", "CLOUD", "CORRIN",
-                    "BAYONETTA", "INKLING", "RIDLEY", "SIMON", "RICHTER",
-                    "KING K. ROOL", "FUFFI", "INCINEROAR", "PIANTA PIRANHA",
-                    "JOKER", "EROE", "BANJO E KAZOOIE", "TERRY", "BYLETH",
-                    "MIN MIN", "STEVE"]
+CHARACTER_NAMES = [["MARIO",					"MARIO"],
+                    ["DONKEY KONG",				"DONKEY KONG"],
+                    ["LINK",					"LINK"],
+                    ["SAMUS",					"SAMUS"],
+                    ["SAMUS OSCURA",			"DARK SAMUS"],
+                    ["YOSHI",					"YOSHI"],
+                    ["KIRBY",					"KIRBY"],
+                    ["FOX",						"FOX"],
+                    ["PIKACHU",					"PIKACHU"],
+                    ["LUIGI",					"LUIGI"],
+                    ["NESS",					"NESS"],
+                    ["CAPTAIN FALCON",			"CAPTAIN FALCON"],
+                    ["JIGGLYPUFF",				"JIGGLYPUFF"],
+                    ["PEACH",					"PEACH"],
+                    ["DAISY",					"DAISY"],
+                    ["BOWSER",					"BOWSER"],
+                    ["ICE CLIMBERS",			"ICE CLIMBERS"],
+                    ["SHEIK",					"SHEIK"],
+                    ["ZELDA",					"ZELDA"],
+                    ["DR. MARIO",				"DR. MARIO"],
+                    ["PICHU",					"PICHU"],
+                    ["FALCO",					"FALCO"],
+                    ["MARTH",					"MARTH"],
+                    ["LUCINA",					"LUCINA"],
+                    ["LINK BAMBINO",			"YOUNG LINK"],
+                    ["GANONDORF",				"GANONDORF"],
+                    ["MEWTWO",					"MEWTWO"],
+                    ["ROY",						"ROY"],
+                    ["CHROM",					"CHROM"],
+                    ["MR. GAME & WATCH",		"MR. GAME & WATCH"],
+                    ["META KNIGHT",				"META KNIGHT"],
+                    ["PIT",						"PIT"],
+                    ["PIT OSCURO",				"DARK PIT"],
+                    ["SAMUS TUTA ZERO",			"ZERO SUIT SAMUS"],
+                    ["WARIO",					"WARIO"],
+                    ["SNAKE",					"SNAKE"],
+                    ["IKE",						"IKE"],
+                    ["ALLENATORE DI POKÉMON",	"POKÉMON TRAINER"],
+                    ["DIDDY KONG",				"DIDDY KONG"],
+                    ["LUCAS",					"LUCAS"],
+                    ["SONIC",					"SONIC"],
+                    ["KING DEDEDE",				"KING DEDEDE"],
+                    ["OLIMAR",					"OLIMAR"],
+                    ["LUCARIO",					"LUCARIO"],
+                    ["R.O.B.",					"R.O.B."],
+                    ["LINK CARTONE",			"TOON LINK"],
+                    ["WOLF",					"WOLF"],
+                    ["ABITANTE",				"VILLAGER"],
+                    ["MEGA MAN",				"MEGA MAN"],
+                    ["TRAINER DI WII FIT",		"WII FIT TRAINER"],
+                    ["ROSALINDA E SFAVILLOTTO",	"ROSALINA & LUMA"],
+                    ["LITTLE MAC",				"LITTLE MAC"],
+                    ["GRENINJA",				"GRENINJA"],
+                    ["GUERRIERO MII",			"MII FIGHTER"],
+                    ["LOTTATORE MII",			"MII FIGHTER"],
+                    ["SPADACCINO MII",			"MII FIGHTER"],
+                    ["FUCILIERE MII",			"MII FIGHTER"],
+                    ["PALUTENA",				"PALUTENA"],
+                    ["PAC-MAN",					"PAC-MAN"],
+                    ["DARAEN",					"ROBIN"],
+                    ["SHULK",					"SHULK"],
+                    ["BOWSER JUNIOR",			"BOWSER JR."],
+                    ["LARRY",					"BOWSER JR."],
+                    ["ROY",						"BOWSER JR."],
+                    ["WENDY",					"BOWSER JR."],
+                    ["IGGY",					"BOWSER JR."],
+                    ["MORTON",					"BOWSER JR."],
+                    ["LEMMY",					"BOWSER JR."],
+                    ["LUDWIG",					"BOWSER JR."],
+                    ["DUO DUCK HUNT",			"DUCK HUNT"],
+                    ["RYU",						"RYU"],
+                    ["KEN",						"KEN"],
+                    ["CLOUD",					"CLOUD"],
+                    ["CORRIN",					"CORRIN"],
+                    ["BAYONETTA",				"BAYONETTA"],
+                    ["RAGAZZO INKLING",			"INKLING"],
+                    ["RAGAZZA INKLING",			"INKLING"],
+                    ["RIDLEY",					"RIDLEY"],
+                    ["SIMON",					"SIMON"],
+                    ["RICHTER",					"RICHTER"],
+                    ["KING K. ROOL",			"KING K. ROOL"],
+                    ["FUFFI",					"ISABELLE"],
+                    ["INCINEROAR",				"INCINEROAR"],
+                    ["PIANTA PIRANHA",			"PIRANHA PLANT"],
+                    ["JOKER",					"JOKER"],
+                    ["EROE",					"HERO"],
+                    ["BANJO E KAZOOIE",			"BANJO & KAZOOIE"],
+                    ["TERRY",					"TERRY"],
+                    ["BYLETH",					"BLYETH"],
+                    ["MIN MIN",					"MIN MIN"],
+                    ["STEVE",					"STEVE"],
+                    ["ALEX",					"STEVE"],
+                    ["ZOMBIE",					"STEVE"],
+                    ["ENDERMAN",				"STEVE"]]
 
 IMAGE_POLARIZATION_TRESHOLD = 40
 
@@ -80,9 +156,9 @@ def getName(data, pos_x, is_winner):
     name = normalizeName(pytesseract.image_to_string(name_rect))
     character_name_errors = numpy.zeros(len(CHARACTER_NAMES), dtype=int)
     for i in range(len(CHARACTER_NAMES)):
-        character_name_errors[i] = optimalAlignError(name, CHARACTER_NAMES[i])
+        character_name_errors[i] = optimalAlignError(name, CHARACTER_NAMES[i][0])
     
-    return CHARACTER_NAMES[numpy.argmin(character_name_errors)]
+    return CHARACTER_NAMES[numpy.argmin(character_name_errors)][1]
 
 
 def getTimeRectangle(data, pos_x):
@@ -122,6 +198,7 @@ def optimalAlignError(arg0, arg1):
     return curr_buffer[len(arg1)]
 #---   ---#
 
+
 data_source = r'C:\Users\franc\Desktop\data.jpg'
 #data_source = r'D:\Utente\Desktop\data.jpg'
 data = cv2.imread(data_source, flags=cv2.IMREAD_UNCHANGED)
@@ -152,4 +229,7 @@ print("G1: %s [%s] - %s" %(G1_pos, normalizeTime(pytesseract.image_to_string(G1_
 print("G2: %s [%s] - %s" %(G2_pos, normalizeTime(pytesseract.image_to_string(G2_time)), G2_character))
 print("G3: %s [%s] - %s" %(G3_pos, normalizeTime(pytesseract.image_to_string(G3_time)), G3_character))
 
+
+#--- CONCLUSION ---#
 print("elapsed time: %.3f s" % (time.time() - t))
+#--- ---#
