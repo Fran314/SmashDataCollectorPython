@@ -208,7 +208,7 @@ def optimalAlignError(arg0, arg1):
 #---   ---#
 
 
-data_source = r'C:\Users\franc\Desktop\data_first.jpg'
+data_source = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\data_first.jpg'
 #data_source = r'D:\Utente\Desktop\data.jpg'
 data = cv2.imread(data_source, flags=cv2.IMREAD_UNCHANGED)
 data = cv2.cvtColor(data, cv2.COLOR_BGR2RGBA)
@@ -224,10 +224,11 @@ for i in range(PLAYERS):
 
 times = []
 for i in range(PLAYERS):
-    times.append(getTimeRectangle(data, TIME_Xs[i]))
+    time_rect = getTimeRectangle(data, TIME_Xs[i])
+    times.append(normalizeTime(pytesseract.image_to_string(time_rect)))
 
 for i in range(PLAYERS):
-    print(f'G{i+1}: {positions[i]} [{normalizeTime(pytesseract.image_to_string(times[i]))}] - {characters[i]}')
+    print(f'G{i+1}: {positions[i]} [{times[i]}] - {characters[i]}')
 
 
 #--- CONCLUSION ---#

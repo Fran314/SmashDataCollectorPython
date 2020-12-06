@@ -13,9 +13,11 @@ t = time.time()
 #   the position of the data. In this case we're using the rectangle
 #   containing the text "Autodistruzioni" as an anchor point
 
-PLAYERS = 1
+PLAYERS = 3
 
-AP_Xs = [43] # X position of the anchor point for G1
+AP_Xs = [43, # X position of the anchor point for G1
+        462, # X position of the anchor point for G2
+        880] # X position of the anchor point for G3
 #---   ---#
 
 
@@ -61,13 +63,18 @@ def getAnchorPoint(data, pos_x, stencil):
 
 #--- ---#
 
+#--- TEST VARIABLES ---#
+positions = [3, 2, 1]
+characters = ["NESS", "CLOUD", "TOON LINK"]
+#--- ---#
+
 
 #stencil_source = r'D:\Utente\Desktop\stencil.png'
 #data_source = r'D:\Utente\Desktop\data.jpg'
-data_source = r'C:\Users\franc\Desktop\data.jpg'
+data_source = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\data_second.jpg'
 ap_stencil_sources = []
 for i in range(PLAYERS):
-    ap_stencil_sources.append(r'C:\Users\franc\Desktop\G' + str(i+1) + r'_ap_stencil.png')
+    ap_stencil_sources.append(r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\G' + str(i+1) + r'_ap_stencil.png')
 
 data = cv2.imread(data_source, flags=cv2.IMREAD_UNCHANGED)
 data = cv2.cvtColor(data, cv2.COLOR_BGR2RGBA)
