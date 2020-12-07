@@ -105,14 +105,14 @@ data = cv2.cvtColor(data, cv2.COLOR_BGR2RGBA)
 
 ap_stencils = []
 for i in range(PLAYERS):
-    ap_stencil_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\G' + str(i+1) + r'_ap_stencil.png'
+    ap_stencil_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\ap_stencils\G' + str(i+1) + r'_ap_stencil.png'
     image = cv2.imread(ap_stencil_path, flags=cv2.IMREAD_UNCHANGED)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGBA)
     ap_stencils.append(image)
 
 null_images = []
 for i in range(PLAYERS):
-    null_image_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\G' + str(i+1) + r'_null_image.png'
+    null_image_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\null_images\G' + str(i+1) + r'_null_image.png'
     image = cv2.imread(null_image_path, flags=cv2.IMREAD_UNCHANGED)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGBA)
     null_images.append(image)
