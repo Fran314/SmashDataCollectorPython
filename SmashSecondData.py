@@ -118,18 +118,23 @@ def getClosestPlayer(image, null_image, characters):
         character_distances = []
         for j in range(8):
             path = os.path.join(ICONS_FOLDER, folderizeName(characters[i]), str(j+1) + ".png")
-            character_image = cv2.imread(path)
+            character_image = cv2.imread(path, flags=cv2.IMREAD_UNCHANGED)
             character_image = cv2.cvtColor(character_image, cv2.COLOR_BGR2RGBA)
-            character_distances.append(imageDistance(character_image, image))
+            distance = imageDistance(character_image, image)
+            character_distances.append(distance)
         distances.append(numpy.min(character_distances))
     return numpy.argmin(distances) - 1
 
+def showImage(image):
+    image = cv2.cvtColor(image, cv2.COLOR_RGBA2BGR)
+    cv2.imshow("image", image)
+    cv2.waitKey(0)
 #--- ---#
 
 
 #--- TEST VARIABLES ---#
 positions = [3, 2, 1]
-characters = ["NESS", "CLOUD", "TOON LINK"]
+characters = ["GANONDORF", "PALUTENA", "TOON LINK"]
 #--- ---#
 
 
@@ -164,40 +169,46 @@ for i in range(PLAYERS):
     kill_icon_y = anchor_points[i] + KILLS_AC_OFF_Y
     kill_image = data[kill_icon_y : kill_icon_y + KILL_ICON_SIZE, kill_icon_x : kill_icon_x + KILL_ICON_SIZE]
     killer = getClosestPlayer(kill_image, null_images[i], characters)
-    if(killer != -1):
-        kill_string.append(killer + 1)
+    kill_string.append(killer + 1)
     
     kill_icon_x += KILLS_OFFSET
     kill_image = data[kill_icon_y : kill_icon_y + KILL_ICON_SIZE, kill_icon_x : kill_icon_x + KILL_ICON_SIZE]
     killer = getClosestPlayer(kill_image, null_images[i], characters)
-    if(killer != -1):
-        kill_string.append(killer + 1)
+    kill_string.append(killer + 1)
 
     kill_icon_x += KILLS_OFFSET
     kill_image = data[kill_icon_y : kill_icon_y + KILL_ICON_SIZE, kill_icon_x : kill_icon_x + KILL_ICON_SIZE]
     killer = getClosestPlayer(kill_image, null_images[i], characters)
-    if(killer != -1):
-        kill_string.append(killer + 1)
+    kill_string.append(killer + 1)
 
     kills.append(kill_string)
 
 given_damages = []
+taken_damages = []
 for i in range(PLAYERS):
     damage_x = AP_Xs[i] + DAMAGE_OFF_X
     given_dmg_y = anchor_points[i] + GIVEN_DMG_OFF_Y
     given_damage_rect = data[given_dmg_y : given_dmg_y + DAMAGE_HEIGHT, damage_x : damage_x + DAMAGE_WIDTH]
-    #for j in range(DAMAGE_RIGHT_BORDER_WIDTH):
-    #    for h in range(DAMAGE_HEIGHT):
-    #        given_damage_rect[h, -j] = numpy.array([0, 0, 0, 255])
-    #given_damage_rect = polarizeImage(given_damage_rect)
-    #given_damage_rect = cv2.resize(given_damage_rect, (2*DAMAGE_WIDTH, 2*DAMAGE_HEIGHT))
+    for j in range(DAMAGE_RIGHT_BORDER_WIDTH):
+        for h in range(DAMAGE_HEIGHT):
+            given_damage_rect[h, -j] = given_damage_rect[4, 1]
+    
+    given_damage_rect = cv2.resize(given_damage_rect, (3*DAMAGE_WIDTH, 3*DAMAGE_HEIGHT), interpolation=cv2.INTER_LANCZOS4)
     given_damages.append(normalizeDamage(pytesseract.image_to_string(given_damage_rect)))
+
+    taken_dmg_y = anchor_points[i] + TAKEN_DMG_OFF_Y
+    taken_damage_rect = data[taken_dmg_y : taken_dmg_y + DAMAGE_HEIGHT, damage_x : damage_x + DAMAGE_WIDTH]
+    for j in range(DAMAGE_RIGHT_BORDER_WIDTH):
+        for h in range(DAMAGE_HEIGHT):
+            taken_damage_rect[h, -j] = taken_damage_rect[4, 1]
+    taken_damage_rect = cv2.resize(taken_damage_rect, (3*DAMAGE_WIDTH, 3*DAMAGE_HEIGHT), interpolation=cv2.INTER_LANCZOS4)
+    taken_damages.append(normalizeDamage(pytesseract.image_to_string(taken_damage_rect)))
 
 
 for i in range(PLAYERS):
-    print(f'G{i+1} anchor point at {anchor_points[i]}')
-    print(f'killed by {kills[i]}')
+    print(f'G{i+1} killed by {kills[i]}')
     print(f'given damage: {given_damages[i]}')
+    print(f'taken damage: {taken_damages[i]}')
     print()
 
 #--- CONCLUSION ---#
