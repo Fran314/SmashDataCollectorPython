@@ -1,16 +1,20 @@
 import time
 import numpy
+import pytesseract
 from cv2 import cv2
 import os
 
 
 #--- INITIALIZATION ---#
 t = time.time()
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 #---   ---#
 
 
 #--- CONSTANTS ---#
 ICONS_FOLDER = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\icons'
+
+IMAGE_POLARIZATION_TRESHOLD = 160
 
 PLAYERS = 3
 
@@ -20,10 +24,33 @@ PLAYERS = 3
 AP_Xs = [43, # X position of the anchor point for G1
         462, # X position of the anchor point for G2
         880] # X position of the anchor point for G3
+
+KILL_ICON_SIZE = 29
+KILLS_AC_OFF_X = 14 # Difference in X coordinates from the anchor point to the first kill icon
+KILLS_AC_OFF_Y = -44 # Difference in Y coordinates from the anchor point to the first kill icon
+KILLS_OFFSET = 33 # Offset on X coordinates between each kill icon
+
+DAMAGE_OFF_X = 272
+GIVEN_DMG_OFF_Y = 96
+TAKEN_DMG_OFF_Y = 167
+DAMAGE_WIDTH = 84
+DAMAGE_HEIGHT = 37
+DAMAGE_RIGHT_BORDER_WIDTH = 17
 #---   ---#
 
 
 #--- DEFINITIONS ---#
+def polarizeImage(image_to_polarize):
+    height = image_to_polarize.shape[0]
+    width = image_to_polarize.shape[1]
+
+    for i in range(height):
+        for j in range(width):
+            if(numpy.linalg.norm(image_to_polarize[i,j] - numpy.array([255, 255, 255, 255])) > IMAGE_POLARIZATION_TRESHOLD):
+                image_to_polarize[i,j] = numpy.array([0, 0, 0, 255])
+
+    return image_to_polarize
+
 def imageDistance(arg0, arg1):
     shape0 = arg0.shape
     shape1 = arg1.shape
@@ -76,6 +103,15 @@ def folderizeName(arg):
     return to_return
 
 
+def normalizeDamage(arg):
+    to_return = ""
+    for c in arg:
+        if((ord(c) >= 48 and ord(c) <= 57)):
+            to_return += c
+    
+    return to_return
+
+
 def getClosestPlayer(image, null_image, characters):
     distances = [imageDistance(null_image, image)]
     for i in range(len(characters)):
@@ -124,26 +160,44 @@ for i in range(PLAYERS):
 kills = []
 for i in range(PLAYERS):
     kill_string = []
-    kill_image = data[anchor_points[i] - 44 : anchor_points[i] - 44 + 29, AP_Xs[i] + 14 : AP_Xs[i] + 14 + 29]
+    kill_icon_x = AP_Xs[i] + KILLS_AC_OFF_X
+    kill_icon_y = anchor_points[i] + KILLS_AC_OFF_Y
+    kill_image = data[kill_icon_y : kill_icon_y + KILL_ICON_SIZE, kill_icon_x : kill_icon_x + KILL_ICON_SIZE]
+    killer = getClosestPlayer(kill_image, null_images[i], characters)
+    if(killer != -1):
+        kill_string.append(killer + 1)
+    
+    kill_icon_x += KILLS_OFFSET
+    kill_image = data[kill_icon_y : kill_icon_y + KILL_ICON_SIZE, kill_icon_x : kill_icon_x + KILL_ICON_SIZE]
     killer = getClosestPlayer(kill_image, null_images[i], characters)
     if(killer != -1):
         kill_string.append(killer + 1)
 
-    kill_image = data[anchor_points[i] - 44 : anchor_points[i] - 44 + 29, AP_Xs[i] + 14 + 33: AP_Xs[i] + 14 + 29 + 33]
-    killer = getClosestPlayer(kill_image, null_images[i], characters)
-    if(killer != -1):
-        kill_string.append(killer + 1)
-
-    kill_image = data[anchor_points[i] - 44 : anchor_points[i] - 44 + 29, AP_Xs[i] + 14 + 66: AP_Xs[i] + 14 + 29 + 66]
+    kill_icon_x += KILLS_OFFSET
+    kill_image = data[kill_icon_y : kill_icon_y + KILL_ICON_SIZE, kill_icon_x : kill_icon_x + KILL_ICON_SIZE]
     killer = getClosestPlayer(kill_image, null_images[i], characters)
     if(killer != -1):
         kill_string.append(killer + 1)
 
     kills.append(kill_string)
 
+given_damages = []
+for i in range(PLAYERS):
+    damage_x = AP_Xs[i] + DAMAGE_OFF_X
+    given_dmg_y = anchor_points[i] + GIVEN_DMG_OFF_Y
+    given_damage_rect = data[given_dmg_y : given_dmg_y + DAMAGE_HEIGHT, damage_x : damage_x + DAMAGE_WIDTH]
+    #for j in range(DAMAGE_RIGHT_BORDER_WIDTH):
+    #    for h in range(DAMAGE_HEIGHT):
+    #        given_damage_rect[h, -j] = numpy.array([0, 0, 0, 255])
+    #given_damage_rect = polarizeImage(given_damage_rect)
+    #given_damage_rect = cv2.resize(given_damage_rect, (2*DAMAGE_WIDTH, 2*DAMAGE_HEIGHT))
+    given_damages.append(normalizeDamage(pytesseract.image_to_string(given_damage_rect)))
+
+
 for i in range(PLAYERS):
     print(f'G{i+1} anchor point at {anchor_points[i]}')
     print(f'killed by {kills[i]}')
+    print(f'given damage: {given_damages[i]}')
     print()
 
 #--- CONCLUSION ---#
