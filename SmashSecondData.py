@@ -12,9 +12,9 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 
 
 #--- CONSTANTS ---#
-ICONS_FOLDER = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\icons'
+ICONS_FOLDER = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\res\icons'
 
-IMAGE_POLARIZATION_TRESHOLD = 160
+IMAGE_POLARIZATION_TRESHOLD = 120
 
 PLAYERS = 3
 
@@ -39,7 +39,7 @@ DAMAGE_RIGHT_BORDER_WIDTH = 17
 #---   ---#
 
 
-#--- DEFINITIONS ---#
+#--- FUNCTIONS ---#
 def polarizeImage(image_to_polarize):
     height = image_to_polarize.shape[0]
     width = image_to_polarize.shape[1]
@@ -134,26 +134,26 @@ def showImage(image):
 
 #--- TEST VARIABLES ---#
 positions = [3, 2, 1]
-characters = ["GANONDORF", "PALUTENA", "TOON LINK"]
+characters = ["NESS", "CLOUD", "TOON LINK"]
 #--- ---#
 
 
 #stencil_source = r'D:\Utente\Desktop\stencil.png'
 #data_source = r'D:\Utente\Desktop\data.jpg'
-data_source = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\data_second.jpg'
+data_source = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\res\data_second.jpg'
 data = cv2.imread(data_source, flags=cv2.IMREAD_UNCHANGED)
 data = cv2.cvtColor(data, cv2.COLOR_BGR2RGBA)
 
 ap_stencils = []
 for i in range(PLAYERS):
-    ap_stencil_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\ap_stencils\G' + str(i+1) + r'_ap_stencil.png'
+    ap_stencil_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\res\ap_stencils\G' + str(i+1) + r'_ap_stencil.png'
     image = cv2.imread(ap_stencil_path, flags=cv2.IMREAD_UNCHANGED)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGBA)
     ap_stencils.append(image)
 
 null_images = []
 for i in range(PLAYERS):
-    null_image_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\null_images\G' + str(i+1) + r'_null_image.png'
+    null_image_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\res\null_images\G' + str(i+1) + r'_null_image.png'
     image = cv2.imread(null_image_path, flags=cv2.IMREAD_UNCHANGED)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGBA)
     null_images.append(image)
@@ -192,8 +192,7 @@ for i in range(PLAYERS):
     for j in range(DAMAGE_RIGHT_BORDER_WIDTH):
         for h in range(DAMAGE_HEIGHT):
             given_damage_rect[h, -j] = given_damage_rect[4, 1]
-    
-    given_damage_rect = cv2.resize(given_damage_rect, (3*DAMAGE_WIDTH, 3*DAMAGE_HEIGHT), interpolation=cv2.INTER_LANCZOS4)
+    given_damage_rect = polarizeImage(given_damage_rect)
     given_damages.append(normalizeDamage(pytesseract.image_to_string(given_damage_rect)))
 
     taken_dmg_y = anchor_points[i] + TAKEN_DMG_OFF_Y
@@ -201,7 +200,7 @@ for i in range(PLAYERS):
     for j in range(DAMAGE_RIGHT_BORDER_WIDTH):
         for h in range(DAMAGE_HEIGHT):
             taken_damage_rect[h, -j] = taken_damage_rect[4, 1]
-    taken_damage_rect = cv2.resize(taken_damage_rect, (3*DAMAGE_WIDTH, 3*DAMAGE_HEIGHT), interpolation=cv2.INTER_LANCZOS4)
+    taken_damage_rect = polarizeImage(taken_damage_rect)
     taken_damages.append(normalizeDamage(pytesseract.image_to_string(taken_damage_rect)))
 
 

@@ -142,7 +142,7 @@ TIME_Xs = [198,     # X position of the time rectangle for G1
 #---   ---#
 
 
-#--- DEFINITIONS ---#
+#--- FUNCTIONS ---#
 def polarizeImage(image_to_polarize):
     height = image_to_polarize.shape[0]
     width = image_to_polarize.shape[1]
@@ -208,7 +208,7 @@ def optimalAlignError(arg0, arg1):
 #---   ---#
 
 
-data_source = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\data_first.jpg'
+data_source = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\res\data_first.jpg'
 #data_source = r'D:\Utente\Desktop\data.jpg'
 data = cv2.imread(data_source, flags=cv2.IMREAD_UNCHANGED)
 data = cv2.cvtColor(data, cv2.COLOR_BGR2RGBA)
