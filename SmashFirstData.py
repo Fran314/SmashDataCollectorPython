@@ -106,7 +106,7 @@ CHARACTER_NAMES = [["MARIO",					"MARIO"],
                     ["ZOMBIE",					"STEVE"],
                     ["ENDERMAN",				"STEVE"]]
 
-IMAGE_POLARIZATION_TRESHOLD = 40
+IMAGE_POLARIZATION_TRESHOLD = 120
 
 PLAYERS = 3 # Number of players
 
@@ -205,6 +205,11 @@ def optimalAlignError(arg0, arg1):
             curr_buffer[j+1] = min(brev_buffer[j] + pij, curr_buffer[j] + 1, brev_buffer[j+1] + 1)
 
     return curr_buffer[len(arg1)]
+
+def showImage(image):
+    image = cv2.cvtColor(image, cv2.COLOR_RGBA2BGR)
+    cv2.imshow("image", image)
+    cv2.waitKey(0)
 #---   ---#
 
 
