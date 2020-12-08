@@ -13,9 +13,16 @@ output_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer'
 
 
 #--- INITIALIZATION ---#
+#os.system('mode con: cols=88 lines=30')
 t = time.time()
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 #---   ---#
+
+
+#--- CLASSES ---#
+class InvalidData(Exception):
+    pass
+#--- ---#
 
 
 #--- CONSTANTS ---#
@@ -116,8 +123,7 @@ CHARACTER_NAMES = [["MARIO",					"MARIO"],
                     ["ZOMBIE",					"STEVE"],
                     ["ENDERMAN",				"STEVE"]]
 
-FIRST_POLAR_TRESHOLD = 40
-SECOND_POLAR_TRESHOLD = 120
+POLARIZATION_THRESHOLD = 40
 
 FIRST_COL = numpy.array([251, 255, 0, 255]) # Color of the first place #1 icon
 SECOND_COL = numpy.array([204, 204, 204, 255]) # Color of the second place #2 icon
@@ -162,12 +168,11 @@ KILLS_AC_OFF_X = 14 # Difference in X coordinates from the anchor point to the f
 KILLS_AC_OFF_Y = -44 # Difference in Y coordinates from the anchor point to the first kill icon
 KILLS_OFFSET = 33 # Offset on X coordinates between each kill icon
 
-DAMAGE_OFF_X = 272
-GIVEN_DMG_OFF_Y = 96
-TAKEN_DMG_OFF_Y = 167
-DAMAGE_WIDTH = 84
-DAMAGE_HEIGHT = 37
-DAMAGE_RIGHT_BORDER_WIDTH = 17
+DAMAGE_OFF_Xs = [281, 300, 320]
+GIVEN_DMG_OFF_Y_DIG = 103
+TAKEN_DMG_OFF_Y_DIG = 174
+DIGIT_WIDTH = 20
+DIGIT_HEIGHT = 25
 #--- ---#
 
 
@@ -176,12 +181,14 @@ def polarizeImage(image_to_polarize, treshold):
     height = image_to_polarize.shape[0]
     width = image_to_polarize.shape[1]
 
+    to_return = numpy.copy(image_to_polarize)
+
     for i in range(height):
         for j in range(width):
             if(numpy.linalg.norm(image_to_polarize[i,j] - numpy.array([255, 255, 255, 255])) > treshold):
-                image_to_polarize[i,j] = numpy.array([0, 0, 0, 255])
+                to_return[i,j] = numpy.array([0, 0, 0, 255])
 
-    return image_to_polarize
+    return to_return
 
 
 def getName(data, pos_x, is_winner):
@@ -190,7 +197,7 @@ def getName(data, pos_x, is_winner):
     else:
         name_rect = data[L_NAME_Y : (L_NAME_Y + NAME_HEIGHT), pos_x : (pos_x + NAME_WIDTH)]
 
-    name_rect = polarizeImage(name_rect, FIRST_POLAR_TRESHOLD)
+    name_rect = polarizeImage(name_rect, POLARIZATION_THRESHOLD)
     name = normalizeName(pytesseract.image_to_string(name_rect))
     character_name_errors = numpy.zeros(len(CHARACTER_NAMES), dtype=int)
     for i in range(len(CHARACTER_NAMES)):
@@ -200,7 +207,7 @@ def getName(data, pos_x, is_winner):
 
 
 def getTimeRectangle(data, pos_x):
-    return cv2.resize(polarizeImage(data[TIME_Y : (TIME_Y + TIME_HEIGHT), pos_x : (pos_x + TIME_WIDTH)], FIRST_POLAR_TRESHOLD), (2*TIME_WIDTH, 2*TIME_HEIGHT))
+    return cv2.resize(polarizeImage(data[TIME_Y : (TIME_Y + TIME_HEIGHT), pos_x : (pos_x + TIME_WIDTH)], POLARIZATION_THRESHOLD), (2*TIME_WIDTH, 2*TIME_HEIGHT))
 
 
 def normalizeName(arg):
@@ -311,6 +318,88 @@ def getClosestPlayer(image, null_image, characters):
     return numpy.argmin(distances) - 1
 
 
+def getClosestDigit(image):
+    distances = []
+    image = polarizeImage(image, POLARIZATION_THRESHOLD)
+    for i in range(10):
+        path = os.path.join(res_path, "small_digits",  str(i) + ".png")
+        digit_image = cv2.imread(path, flags=cv2.IMREAD_UNCHANGED)
+        digit_image = cv2.cvtColor(digit_image, cv2.COLOR_BGR2RGBA)
+        distances.append(imageDistance(digit_image, image))
+    
+    digit = numpy.argmin(distances)
+    if(digit == 6 or digit == 8):
+        if(image[8,16,0] > 127):
+            return 8
+        else:
+            return 6
+    return digit
+
+
+def isValidTime(arg):
+    if(arg == ""):
+        return True
+    if(len(arg) != 4):
+        return False
+    
+    if(arg[1] != ':'):
+        return False
+
+    if(ord(arg[0]) < 48 or ord(arg[0]) > 57
+        or ord(arg[2]) < 48 or ord(arg[2]) > 53
+        or ord(arg[3]) < 48 or ord(arg[3]) > 57):
+        return False
+
+    return True
+
+
+def isValidFirstData(positions, times):
+    if(len(positions) != len(times)):
+        return False
+    
+    if(len(times) < 2):
+        return False
+
+    for i in range(len(times)):
+        if(positions[i] == 1 and times[i] != ""):
+            return False
+        if(positions[i] != 1 and times[i] == ""):
+            return False
+
+    order = []
+    for i in range(len(times)):
+        pos = len(order)
+        while(pos > 0 and positions[i] < positions[order[pos-1]]):
+            pos -= 1
+        order.insert(pos, i)
+
+    if(positions[order[0]] != 1 or positions[order[1]] != 2):
+        return False
+        
+    times_sec = convertTimesToSec(times)
+
+    for i in range(2, len(times)):
+        if(positions[order[i]] == i+1 and times_sec[order[i]] >= times_sec[order[i-1]]):
+            return False
+        if(positions[order[i]] != i+1 and times_sec[order[i]] != times_sec[order[i-1]]):
+            return False
+    
+    return True
+
+def convertTimesToSec(times):
+    times_sec = []
+    first_pos = 0
+    for i in range(len(times)):
+        if(times[i] == ""):
+            times_sec.append(0)
+            first_pos = i
+        else:
+            times_sec.append(60 * int(times[i][0]) + int(times[i][2:3]))
+
+    times_sec[first_pos] = numpy.max(times_sec)
+    return times_sec
+            
+
 def mergeSort(arg):
     if(len(arg) <= 1):
         return arg
@@ -343,11 +432,14 @@ def mergeSort(arg):
     return arg
 
 
-def showImage(image):
+def showImage(image, text = "image", delay = 0):
     image = cv2.cvtColor(image, cv2.COLOR_RGBA2BGR)
-    cv2.imshow("image", image)
-    cv2.waitKey(0)
+    cv2.namedWindow(text)
+    cv2.moveWindow(text, 20, 20)
+    cv2.imshow(text, image)
+    cv2.waitKey(delay)
 #--- ---#
+
 
 dirs = mergeSort(os.listdir(data_path))
 if(len(dirs) % 2 != 0):
@@ -370,6 +462,7 @@ for i in range(PLAYERS):
 
 output_file = open(os.path.join(output_path, "output.txt"), 'w')
 for match_index in range(int(len(dirs)/2)):
+    print(f'match {match_index+1}/{int(len(dirs)/2)}')
     first_data = cv2.imread(os.path.join(data_path, dirs[2*match_index]), flags=cv2.IMREAD_UNCHANGED)
     first_data = cv2.cvtColor(first_data, cv2.COLOR_BGR2RGBA)
 
@@ -378,21 +471,89 @@ for match_index in range(int(len(dirs)/2)):
 
     #--- FIRST IMAGE ---#
     positions = []
-    for i in range(PLAYERS):
-        col = first_data[SAMPLE_POINT_Y, SAMPLE_POINT_Xs[i]]
-        positions.append(numpy.argmin(numpy.array([numpy.linalg.norm(col - FIRST_COL), numpy.linalg.norm(col - SECOND_COL), numpy.linalg.norm(col - THIRD_COL)]))+1)
-
     characters = []
-    for i in range(PLAYERS):
-        characters.append(getName(first_data, NAME_Xs[i], positions[i]))
-
     times = []
-    for i in range(PLAYERS):
-        time_rect = getTimeRectangle(first_data, TIME_Xs[i])
-        times.append(normalizeTime(pytesseract.image_to_string(time_rect)))
+    try:
+        for i in range(PLAYERS):
+            col = first_data[SAMPLE_POINT_Y, SAMPLE_POINT_Xs[i]]
+            positions.append(numpy.argmin(numpy.array([numpy.linalg.norm(col - FIRST_COL), numpy.linalg.norm(col - SECOND_COL), numpy.linalg.norm(col - THIRD_COL)]))+1)
 
-    for i in range(PLAYERS):
-        print(f'G{i+1}: {positions[i]} [{times[i]}] - {characters[i]}')
+        for i in range(PLAYERS):
+            characters.append(getName(first_data, NAME_Xs[i], positions[i]))
+
+        for i in range(PLAYERS):
+            time_rect = getTimeRectangle(first_data, TIME_Xs[i])
+            times.append(normalizeTime(pytesseract.image_to_string(time_rect)))
+
+        for i in range(PLAYERS):
+            if(positions[i] < 1 or positions[i] > PLAYERS):
+                raise InvalidData
+            if(isValidTime(times[i]) == False):
+                raise InvalidData
+            if(isValidFirstData(positions, times) == False):
+                raise InvalidData
+    except InvalidData:
+        print("Unable to read data. Please insert the data manually.")
+        cv2.destroyAllWindows()
+        showImage(cv2.resize(first_data, (640, 360)), f'match {match_index+1}/{int(len(dirs)/2)}, first screenshot', 20)
+        valid_data = False
+        while(valid_data == False):
+            positions = []
+            characters = []
+            times = []
+            for i in range(PLAYERS):
+                valid_input = False
+                player_character = ""
+                player_data = ""
+                while(valid_input == False):
+                    player_character = input(f'insert G{i+1} character: ')
+                    for j in range(len(CHARACTER_NAMES)):
+                        if(player_character.upper() == CHARACTER_NAMES[j][0]):
+                            valid_input = True
+                            player_character = CHARACTER_NAMES[j][1]
+                    if(valid_input == False):
+                        print("Invalid input")
+                        continue
+                
+                characters.append(player_character)
+
+                valid_input = False
+                while(valid_input == False):
+                    valid_input = True
+                    player_data = input(f'insert G{i+1} position and time ([pos]  [m:ss]): ')
+                    if(len(player_data) != 6 and len(player_data) != 1):
+                        valid_input = False
+                        print("Invalid input")
+                        continue
+                    if(ord(player_data[0]) < 49 or ord(player_data[0]) > 48 + PLAYERS):
+                        valid_input = False
+                        print("Invalid input")
+                        continue
+                    if(player_data[0] == '1'):
+                        if(len(player_data) != 1):
+                            valid_input = False
+                            print("Invalid input")
+                            continue
+                    else:
+                        if(len(player_data) != 6):
+                            valid_input = False
+                            print("Invalid input")
+                            continue
+                        if(isValidTime(player_data[2:]) == False):
+                            valid_input = False
+                            print("Invalid input")
+                            continue
+                positions.append(int(player_data[0]))
+                if(player_data[0] != '1'):
+                    times.append(player_data[2:])
+                else:
+                    times.append("")
+            
+            valid_data = isValidFirstData(positions, times)
+            if(valid_data == False):
+                print("The data inserted has an error or is self-contradictory in some way. Please check and insert the data again.")
+        print("The data inserted is valid!")
+        cv2.destroyAllWindows()
     #--- ---#
 
     #--- SECOND IMAGE ---#
@@ -427,22 +588,25 @@ for match_index in range(int(len(dirs)/2)):
     given_damages = []
     taken_damages = []
     for i in range(PLAYERS):
-        damage_x = AP_Xs[i] + DAMAGE_OFF_X
-        given_dmg_y = anchor_points[i] + GIVEN_DMG_OFF_Y
-        given_damage_rect = second_data[given_dmg_y : given_dmg_y + DAMAGE_HEIGHT, damage_x : damage_x + DAMAGE_WIDTH]
-        for j in range(DAMAGE_RIGHT_BORDER_WIDTH):
-            for h in range(DAMAGE_HEIGHT):
-                given_damage_rect[h, -j] = given_damage_rect[4, 1]
-        given_damage_rect = polarizeImage(given_damage_rect, SECOND_POLAR_TRESHOLD)
-        given_damages.append(normalizeDamage(pytesseract.image_to_string(given_damage_rect)))
-
-        taken_dmg_y = anchor_points[i] + TAKEN_DMG_OFF_Y
-        taken_damage_rect = second_data[taken_dmg_y : taken_dmg_y + DAMAGE_HEIGHT, damage_x : damage_x + DAMAGE_WIDTH]
-        for j in range(DAMAGE_RIGHT_BORDER_WIDTH):
-            for h in range(DAMAGE_HEIGHT):
-                taken_damage_rect[h, -j] = taken_damage_rect[4, 1]
-        taken_damage_rect = polarizeImage(taken_damage_rect, SECOND_POLAR_TRESHOLD)
-        taken_damages.append(normalizeDamage(pytesseract.image_to_string(taken_damage_rect)))
+        given_damage = 0
+        digit_y = anchor_points[i] + GIVEN_DMG_OFF_Y_DIG
+        digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[0]
+        given_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])*100
+        digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[1]
+        given_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])*10
+        digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[2]
+        given_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])
+        given_damages.append(given_damage)
+        
+        taken_damage = 0
+        digit_y = anchor_points[i] + TAKEN_DMG_OFF_Y_DIG
+        digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[0]
+        taken_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])*100
+        digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[1]
+        taken_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])*10
+        digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[2]
+        taken_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])
+        taken_damages.append(taken_damage)
     #--- ---#
 
     dirs[2*match_index]
