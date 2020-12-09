@@ -10,6 +10,8 @@ data_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\data'
 res_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\res'
 output_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer'
 
+TAKEN_GIVEN_DMG_THRESHOLD = 30
+
 
 #--- INITIALIZATION ---#
 #os.system('mode con: cols=88 lines=30')
@@ -24,6 +26,7 @@ class InvalidData(Exception):
 
 #--- CONSTANTS ---#
 PLAYERS = 3 # Number of players
+MAX_LIVES = 3
 
 CHARACTER_NAMES = [["MARIO",					"MARIO"],
                     ["DONKEY KONG",				"DONKEY KONG"],
@@ -160,14 +163,18 @@ AP_Xs = [43, # X position of the anchor point for G1
         462, # X position of the anchor point for G2
         880] # X position of the anchor point for G3
 
-KILL_ICON_SIZE = 29
-KILLS_AC_OFF_X = 14 # Difference in X coordinates from the anchor point to the first kill icon
-KILLS_AC_OFF_Y = -44 # Difference in Y coordinates from the anchor point to the first kill icon
-KILLS_OFFSET = 33 # Offset on X coordinates between each kill icon
+SELFDESTR_OFF_X = 341
+SELFDESTR_OFF_Y = 32
+
+FALL_ICON_SIZE = 29
+FALLS_AC_OFF_X = 14 # Difference in X coordinates from the anchor point to the first fall icon
+FALLS_AC_OFF_Y = -44 # Difference in Y coordinates from the anchor point to the first fall icon
+FALLS_OFFSET = 33 # Offset on X coordinates between each fall icon
 
 DAMAGE_OFF_Xs = [281, 300, 320]
-GIVEN_DMG_OFF_Y_DIG = 103
-TAKEN_DMG_OFF_Y_DIG = 174
+GIVEN_DMG_OFF_Y = 103
+TAKEN_DMG_OFF_Y = 174
+
 DIGIT_WIDTH = 20
 DIGIT_HEIGHT = 25
 
@@ -271,7 +278,7 @@ def getClosestPlayer(image, null_image, characters):
 def getClosestDigit(image):
     distances = []
     image = polarizeImage(image, POLARIZATION_THRESHOLD)
-    for i in range(10):
+    for i in range(11):
         path = os.path.join(res_path, "small_digits",  str(i) + ".png")
         digit_image = readImage(path)
         distances.append(imageDistance(digit_image, image))
@@ -282,6 +289,8 @@ def getClosestDigit(image):
             return 8
         else:
             return 6
+    if(digit == 10):
+        return 0
     return digit
 
 
@@ -390,7 +399,7 @@ def convertTimesToSec(times):
             
 
 def readImage(path):
-    image = cv2.imread(path, , flags=cv2.IMREAD_UNCHANGED)
+    image = cv2.imread(path, flags=cv2.IMREAD_UNCHANGED)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGBA)
 
     return image
@@ -434,12 +443,12 @@ for match_index in range(tot_matches):
         characters = []
         times = []
         for i in range(PLAYERS):
-            #--- PLAYER POSITION ---#
+            #--- GET PLAYER POSITION ---#
             col = first_data[SAMPLE_POINT_Y, SAMPLE_POINT_Xs[i]]
+            # TODO: 3 players only
             positions.append(numpy.argmin(numpy.array([numpy.linalg.norm(col - FIRST_COL), numpy.linalg.norm(col - SECOND_COL), numpy.linalg.norm(col - THIRD_COL)]))+1)
 
-        for i in range(PLAYERS):
-            #--- PLAYER CHARACTER ---#
+            #--- GET PLAYER CHARACTER ---#
             if(positions[i] == 1):
                 name_rect = first_data[W_NAME_Y : (W_NAME_Y + NAME_HEIGHT), NAME_Xs[i] : (NAME_Xs[i] + NAME_WIDTH)]
             else:
@@ -447,74 +456,83 @@ for match_index in range(tot_matches):
             name_rect = polarizeImage(name_rect, POLARIZATION_THRESHOLD)
             name = normalizeName(pytesseract.image_to_string(name_rect))
             character_name_errors = numpy.zeros(len(CHARACTER_NAMES))
-            for i in range(len(CHARACTER_NAMES)):
-                character_name_errors[i] = editDistance(name, CHARACTER_NAMES[i][0])
+            for j in range(len(CHARACTER_NAMES)):
+                character_name_errors[j] = editDistance(name, CHARACTER_NAMES[j][0])
             characters.append(CHARACTER_NAMES[numpy.argmin(character_name_errors)][1])
 
-        for i in range(PLAYERS):
-            #--- PLAYER TIME ---#
+            #--- GET PLAYER TIME ---#
             time_rect = first_data[TIME_Y : (TIME_Y + TIME_HEIGHT), TIME_Xs[i] : (TIME_Xs[i] + TIME_WIDTH)]
             time_rect = polarizeImage(time_rect, POLARIZATION_THRESHOLD)
             time_rect = cv2.resize(time_rect, (2*TIME_WIDTH, 2*TIME_HEIGHT))
             times.append(normalizeTime(pytesseract.image_to_string(time_rect)))
-        
-        #--- FIRST IMAGE - ERROR CHECKING ---#
-        for i in range(PLAYERS):
+
+            #--- PLAYER - ERROR CHECKING ---#
             if(positions[i] < 1 or positions[i] > PLAYERS):
                 raise InvalidData
             if(isValidTime(times[i]) == False):
                 raise InvalidData
+        
+        #--- FIRST DATA - ERROR CHECKING ---#
         if(isValidFirstData(positions, times) == False):
             raise InvalidData
 
 
         #--- SECOND IMAGE ---#
         anchor_points = []
-        for i in range(PLAYERS):
-            stencil_height = ap_stencils[i].shape[0]
-            stencil_width = ap_stencils[i].shape[1]
-            data_height = second_data.shape[0]
-
-            min_norm = imageDistance(ap_stencils[i], second_data[0 : stencil_height, AP_Xs[i] : (AP_Xs[i] + stencil_width]))
-            pos_y = 0
-
-            for i in range(data_height - stencil_height):
-                curr_norm = imageDistance(ap_stencils[i], second_data[i : (i + stencil_height), AP_Xs[i] : (AP_Xs[i] + stencil_width]))
-                if(curr_norm < min_norm):
-                    min_norm = curr_norm
-                    pos_y = i
-
-            anchor_points.append(pos_y)
-
-        kills = []
-        for i in range(PLAYERS):
-            kill_string = []
-            kill_icon_x = AP_Xs[i] + KILLS_AC_OFF_X
-            kill_icon_y = anchor_points[i] + KILLS_AC_OFF_Y
-            kill_image = second_data[kill_icon_y : kill_icon_y + KILL_ICON_SIZE, kill_icon_x : kill_icon_x + KILL_ICON_SIZE]
-            killer = getClosestPlayer(kill_image, null_images[i], characters)
-            if(killer != -1):
-                kill_string.append(killer + 1)
-            
-            kill_icon_x += KILLS_OFFSET
-            kill_image = second_data[kill_icon_y : kill_icon_y + KILL_ICON_SIZE, kill_icon_x : kill_icon_x + KILL_ICON_SIZE]
-            killer = getClosestPlayer(kill_image, null_images[i], characters)
-            if(killer != -1):
-                kill_string.append(killer + 1)
-
-            kill_icon_x += KILLS_OFFSET
-            kill_image = second_data[kill_icon_y : kill_icon_y + KILL_ICON_SIZE, kill_icon_x : kill_icon_x + KILL_ICON_SIZE]
-            killer = getClosestPlayer(kill_image, null_images[i], characters)
-            if(killer != -1):
-                kill_string.append(killer + 1)
-
-            kills.append(kill_string)
-
+        selfdestructions = []
+        falls = []
         given_damages = []
         taken_damages = []
         for i in range(PLAYERS):
+            #--- ESTABLISH ANCHOR POINTS ---#
+            stencil_height = ap_stencils[i].shape[0]
+            stencil_width = ap_stencils[i].shape[1]
+            data_height = second_data.shape[0]
+            min_norm = imageDistance(ap_stencils[i], second_data[0 : stencil_height, AP_Xs[i] : (AP_Xs[i] + stencil_width)])
+            pos_y = 0
+            for j in range(data_height - stencil_height):
+                curr_norm = imageDistance(ap_stencils[i], second_data[j : (j + stencil_height), AP_Xs[i] : (AP_Xs[i] + stencil_width)])
+                if(curr_norm < min_norm):
+                    min_norm = curr_norm
+                    pos_y = j
+
+            anchor_points.append(pos_y)
+
+            #--- GET SELFDESTRUCTS ---#
+            digit_y = anchor_points[i] + SELFDESTR_OFF_Y
+            digit_x = AP_Xs[i] + SELFDESTR_OFF_X
+            selfdestructions.append(getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH]))
+
+            #--- GET FALLS ---#
+            fall_list = []
+            fall_icon_x = AP_Xs[i] + FALLS_AC_OFF_X
+            fall_icon_y = anchor_points[i] + FALLS_AC_OFF_Y
+            fall_image = second_data[fall_icon_y : fall_icon_y + FALL_ICON_SIZE, fall_icon_x : fall_icon_x + FALL_ICON_SIZE]
+            killer = getClosestPlayer(fall_image, null_images[i], characters)
+            if(killer != -1):
+                fall_list.append(killer + 1)
+            
+            fall_icon_x += FALLS_OFFSET
+            fall_image = second_data[fall_icon_y : fall_icon_y + FALL_ICON_SIZE, fall_icon_x : fall_icon_x + FALL_ICON_SIZE]
+            killer = getClosestPlayer(fall_image, null_images[i], characters)
+            if(killer != -1):
+                if(len(fall_list) != 1):
+                    raise InvalidData
+                fall_list.append(killer + 1)
+
+            fall_icon_x += FALLS_OFFSET
+            fall_image = second_data[fall_icon_y : fall_icon_y + FALL_ICON_SIZE, fall_icon_x : fall_icon_x + FALL_ICON_SIZE]
+            killer = getClosestPlayer(fall_image, null_images[i], characters)
+            if(killer != -1):
+                if(len(fall_list) != 2):
+                    raise InvalidData
+                fall_list.append(killer + 1)
+
+            falls.append(fall_list)
+
+            #--- GET GIVEN DAMAGE ---#
             given_damage = 0
-            digit_y = anchor_points[i] + GIVEN_DMG_OFF_Y_DIG
+            digit_y = anchor_points[i] + GIVEN_DMG_OFF_Y
             digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[0]
             given_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])*100
             digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[1]
@@ -523,8 +541,9 @@ for match_index in range(tot_matches):
             given_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])
             given_damages.append(given_damage)
             
+            #--- GET TAKEN DAMAGE ---#
             taken_damage = 0
-            digit_y = anchor_points[i] + TAKEN_DMG_OFF_Y_DIG
+            digit_y = anchor_points[i] + TAKEN_DMG_OFF_Y
             digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[0]
             taken_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])*100
             digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[1]
@@ -532,7 +551,23 @@ for match_index in range(tot_matches):
             digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[2]
             taken_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])
             taken_damages.append(taken_damage)
-        #--- ---#
+
+            #--- PLAYER - ERROR CHECKING ---#
+            if(positions[i] != 1 and (len(fall_list) + selfdestructions[i] != MAX_LIVES)):
+                raise InvalidData
+            if(positions[i] == 1 and (len(fall_list) + selfdestructions[i] >= MAX_LIVES)):
+                raise InvalidData
+            for j in fall_list:
+                if(j == i+1):
+                    raise InvalidData
+        
+        #--- SECOND DATA - ERROR CHECKING ---#
+        taken_given_dmg_difference = 0
+        for i in range(PLAYERS):
+            taken_given_dmg_difference += taken_damages[i] - given_damages[i]
+        if(taken_given_dmg_difference < 0 or taken_given_dmg_difference >= TAKEN_GIVEN_DMG_THRESHOLD):
+            raise InvalidData
+
 
         match_string = "\"" + dirs[2*match_index][0:4] + "/" + dirs[2*match_index][4:6] + "/" + dirs[2*match_index][6:8] + "\", "
         match_string += "\"" + str(PLAYERS) + "\", "
@@ -540,13 +575,17 @@ for match_index in range(tot_matches):
             match_string += "\"" + characters[i] + "\", "
             match_string += "\"" + str(positions[i]) + "\", "
 
-            if(len(kills[i]) > 0):
-                match_string += "\""
-                for j in range(len(kills[i])):
-                    match_string += str(kills[i][j])
-                    if(j < len(kills[i]) - 1):
-                        match_string += ","
-            match_string += "\", "
+            falls_string = ""
+            for j in range(len(falls[i])):
+                falls_string += str(falls[i][j])
+                if(j < len(falls[i]) - 1 or selfdestructions[i] > 0):
+                    falls_string += ","
+            for j in range(selfdestructions[i]):
+                falls_string += str(i)
+                if(j < selfdestructions[i] - 1):
+                    falls_string += ","
+
+            match_string += "\"" + falls_string + "\", "
 
             match_string += "\"" + str(given_damages[i]) + "\", "
             match_string += "\"" + str(taken_damages[i]) + "\", "
@@ -626,11 +665,11 @@ output_file = open(os.path.join(output_path, "output.txt"), 'w')
 for match in output_strings[:-1]:
     output_file.write(match)
     output_file.write("\n")
-output_file.write(match)
+output_file.write(output_strings[-1])
 output_file.close()
 
 
 #--- CONCLUSION ---#
 print(f'elapsed time: {(time.time() - t):.3f} s')
-input("Press Enter to continue...")
+#input("Press Enter to continue...")
 #--- ---#
