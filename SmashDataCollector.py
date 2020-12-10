@@ -4,6 +4,7 @@ import sys
 import os
 import pytesseract
 from cv2 import cv2
+import re
 
 #--- CUSTOMIZEABLE ---#
 data_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\data'
@@ -23,6 +24,9 @@ class InvalidData(Exception):
     pass
 
 class Skip(Exception):
+    pass
+
+class SkipAll(Exception):
     pass
 
 
@@ -374,59 +378,54 @@ def isValidFirstData(positions, times):
 
     if(positions[order[0]] != 1 or positions[order[1]] != 2):
         return False
-        
-    times_sec = convertTimesToSec(times)
 
     for i in range(2, len(times)):
-        if(positions[order[i]] == i+1 and times_sec[order[i]] >= times_sec[order[i-1]]):
+        if(positions[order[i]] == i+1 and time2int(times[order[i]]) >= time2int(times[order[i-1]])):
             return False
-        if(positions[order[i]] != i+1 and times_sec[order[i]] != times_sec[order[i-1]]):
+        if(positions[order[i]] != i+1 and time2int(times[order[i]]) != time2int(times[order[i-1]])):
             return False
     
     return True
 
 
-def time2secstring(arg):
+def time2int(arg):
+    return 60 * int(arg[0]) + int(arg[2:4])
+def time2string(arg):
     if(arg == ""):
         return ""
-    return str(60 * int(arg[0]) + int(arg[2:4]))
-def convertTimesToSec(times):
-    times_sec = []
-    first_pos = 0
-    for i in range(len(times)):
-        if(times[i] == ""):
-            times_sec.append(0)
-            first_pos = i
-        else:
-            times_sec.append(60 * int(times[i][0]) + int(times[i][2:4]))
-
-    times_sec[first_pos] = numpy.max(times_sec)
-    return times_sec
+    else:
+        return str(time2int(arg))
 
 
 def convertMatchToString(file_name, players, characters, positions, times, falls, given_damages, taken_damages):
-    match_string = file_name[0:4] + "/" + file_name[4:6] + "/" + file_name[6:8] + "\t"
+    match_string = file_name[6:8] + "/" + file_name[4:6] + "/" + file_name[0:4] + "\t"
     match_string += str(players) + "\t"
     for i in range(players):
         match_string += characters[i] + "\t"
         match_string += str(positions[i]) + "\t"
-
-        #falls_string = ','.join(map(str, falls[i])) 
-        falls_string = ""
-        for j in range(len(falls[i])):
-            falls_string += str(falls[i][j])
-            if(j < len(falls[i]) - 1):
-                falls_string += ","
-
-        match_string += falls_string + "\t"
-
+        match_string += ','.join(map(str, falls[i])) + "\t"
         match_string += str(given_damages[i]) + "\t"
         match_string += str(taken_damages[i]) + "\t"
-        match_string += time2secstring(times[i])
+        match_string += time2string(times[i])
         if(i < players - 1):
             match_string += "\t"
     
     return match_string
+
+
+def readInput(prompt, regex):
+    valid_input = False
+    while(valid_input == False):
+        user_input = input(prompt)
+        if(user_input = "SKIP"):
+            raise Skip
+        elif(user_input = "SKIP ALL"):
+            raise SkipAll
+        elif(re.match(regex, user_input.upper())):
+            valid_input = True
+        else:
+            print("Invalid input")
+    return user_input
 
 
 def readImage(path):
@@ -506,12 +505,15 @@ for match_index in range(tot_matches):
 
             #--- PLAYER - ERROR CHECKING ---#
             if(positions[i] < 1 or positions[i] > PLAYERS):
+                error_message = f'G{i+1}\'s position ({positions[i]}) is invalid'
                 raise InvalidData
             if(isValidTime(times[i]) == False):
+                error_message = f'G{i+1}\'s time ({times[i]}) is invalid'
                 raise InvalidData
         
         #--- FIRST DATA - ERROR CHECKING ---#
         if(isValidFirstData(positions, times) == False):
+            error_message = f'positions ({positions}) and times ({times}) are invalid'
             raise InvalidData
 
 
@@ -541,6 +543,7 @@ for match_index in range(tot_matches):
             killer = getClosestPlayer(fall_image, null_images[i], characters)
             if(killer != -1):
                 if(killer == i):
+                    error_message = f'G{i+1}\'s first killer read as itself'
                     raise InvalidData
                 fall_list.append(killer + 1)
             
@@ -548,7 +551,11 @@ for match_index in range(tot_matches):
             fall_image = second_data[fall_icon_y : fall_icon_y + FALL_ICON_SIZE, fall_icon_x : fall_icon_x + FALL_ICON_SIZE]
             killer = getClosestPlayer(fall_image, null_images[i], characters)
             if(killer != -1):
-                if(killer == i or len(fall_list) != 1):
+                if(killer == i):
+                    error_message = f'G{i+1}\'s second killer read as itself'
+                    raise InvalidData
+                if(len(fall_list) != 1):
+                    error_message = f'G{i+1}\'s second killer read as not null while first was null'
                     raise InvalidData
                 fall_list.append(killer + 1)
 
@@ -556,7 +563,11 @@ for match_index in range(tot_matches):
             fall_image = second_data[fall_icon_y : fall_icon_y + FALL_ICON_SIZE, fall_icon_x : fall_icon_x + FALL_ICON_SIZE]
             killer = getClosestPlayer(fall_image, null_images[i], characters)
             if(killer != -1):
-                if(killer == i or len(fall_list) != 2):
+                if(killer == i):
+                    error_message = f'G{i+1}\'s third killer read as itself'
+                    raise InvalidData
+                if(len(fall_list) != 2):
+                    error_message = f'G{i+1}\'s third killer read as not null while second was null'
                     raise InvalidData
                 fall_list.append(killer + 1)
 
@@ -571,8 +582,10 @@ for match_index in range(tot_matches):
 
             #--- FALLS AND SELFDESTRUCTS - ERROR CHECKING ---#
             if(positions[i] != 1 and len(fall_list) != MAX_LIVES):
+                error_message = f'G{i+1} (not in first position) died a number of times different from 3 ({fall_list})'
                 raise InvalidData
             if(positions[i] == 1 and len(fall_list) >= MAX_LIVES):
+                error_message = f'G{i+1} (in first position) died more than 2 times ({fall_list})'
                 raise InvalidData
 
 
@@ -603,6 +616,7 @@ for match_index in range(tot_matches):
         for i in range(PLAYERS):
             taken_given_dmg_difference += taken_damages[i] - given_damages[i]
         if(taken_given_dmg_difference < 0 or taken_given_dmg_difference >= TAKEN_GIVEN_DMG_THRESHOLD):
+            error_message = f'too big of a difference between total taken damage and total given damage ({taken_given_dmg_difference})'
             raise InvalidData
 
 
@@ -610,7 +624,8 @@ for match_index in range(tot_matches):
         output_strings.append(convertMatchToString(dirs[2*match_index], PLAYERS, characters, positions, times, falls, given_damages, taken_damages))
 
     except InvalidData:
-        problematic_matches.append(match_index)
+        problematic_matches.append([match_index, error_message])
+        print(f'Problem: {error_message}')
         output_strings.append("")
 
 
@@ -621,26 +636,33 @@ if(len(problematic_matches) > 0):
 
 #--- HANDLE PROBLEMATIC MATCHES ---#
 if(len(problematic_matches) > 0):
-    print(f'Unable to read data of {len(problematic_matches)} matches out of {tot_matches}. Please enter the data manually.')
+    print(f'Unable to read data of {len(problematic_matches)} matches out of {tot_matches}. Please enter the data manually. You can skip any match at any time entering "SKIP"')
 match_counter = 0
-for match_index in problematic_matches:
-    print(f'Problematic match #{match_counter+1} of {len(problematic_matches)} (match #{match_index+1})')
+for problematic_match in problematic_matches:
+    print(f'Problematic match #{match_counter+1} of {len(problematic_matches)} (match #{problematic_match[0]+1})')
+    print(f'Problem: {problematic_match[1]}')
 
-    first_data = readImage(os.path.join(data_path, dirs[2*match_index]))
-    second_data = readImage(os.path.join(data_path, dirs[2*match_index + 1]))
+    first_data = readImage(os.path.join(data_path, dirs[2*problematic_match[0]]))
+    second_data = readImage(os.path.join(data_path, dirs[2*problematic_match[0] + 1]))
     valid_data = False
     while(valid_data == False):
         valid_data = True
         try:
             #--- FIRST IMAGE ---#
             cv2.destroyAllWindows()
-            showImage(cv2.resize(first_data, (640, 360)), f'match {match_index+1}/{int(len(dirs)/2)}, first screenshot', 20)
+            showImage(cv2.resize(first_data, (640, 360)), f'match {problematic_match[0]+1}/{int(len(dirs)/2)}, first screenshot', 20)
             characters = []
             positions = []
             times = []
             for i in range(PLAYERS):
                 #--- GET PLAYER CHARACTER ---#
-                player_character = ""
+                regex = f'({")|(".join([name[0] for name in CHARACTER_NAMES])})'
+                player_character = readInput(f'Enter G{i+1} character: ', regex)
+                for name in CHARACTER_NAMES:
+                    if(name[0] == player_character.upper()):
+                        player_character = name[1]
+                        break
+                player_character = CHARACTER_NAMES[CHARACTER_NAMES.index(player_character)]
                 valid_input = False
                 while(valid_input == False):
                     player_character = input(f'Enter G{i+1} character: ')
@@ -658,7 +680,10 @@ for match_index in problematic_matches:
                 player_position = ""
                 valid_input = False
                 while(valid_input == False):
+                    regex = f'[1-{PLAYERS}]'
                     player_position = input(f'Enter G{i+1} position: ')
+                    if(player_position == "SKIP"):
+                        raise Skip
                     if(len(player_position) == 1 and ord(player_position[0]) >= 49 and ord(player_position[0]) <= 48 + PLAYERS):
                         valid_input = True
                     else:
@@ -669,7 +694,10 @@ for match_index in problematic_matches:
                 player_time = ""
                 valid_input = False
                 while(valid_input == False):
+                    regex = "([0-9]:[0-5][0-9])?"
                     player_time = input(f'Enter G{i+1} time [m:ss]: ')
+                    if(player_time == "SKIP"):
+                        raise Skip
                     if(isValidTime(player_time)):
                         valid_input = True
                     else:
@@ -683,7 +711,7 @@ for match_index in problematic_matches:
 
             #--- SECOND IMAGE ---#
             cv2.destroyAllWindows()
-            showImage(cv2.resize(second_data, (640, 360)), f'match {match_index+1}/{int(len(dirs)/2)}, second screenshot', 20)
+            showImage(cv2.resize(second_data, (640, 360)), f'match {problematic_match[0]+1}/{int(len(dirs)/2)}, second screenshot', 20)
             falls = []
             given_damages = []
             taken_damages = []
@@ -692,7 +720,10 @@ for match_index in problematic_matches:
                 player_falls_string = ""
                 valid_input = False
                 while(valid_input == False):
+                    regex = "([" + "".join(map(str, range(1, i+1))) + "".join(map(str, range(i+2, PLAYERS+1))) + "](,[" + "".join(map(str, range(1, i+1))) + "".join(map(str, range(i+2, PLAYERS+1))) + "]){0," + str(MAX_LIVES - 1) + "})?"
                     player_falls_string = input(f'Enter G{i+1} falls (separated by commas): ')
+                    if(player_falls_string == "SKIP"):
+                        raise Skip
                     if(len(player_falls_string) == 0 or len(player_falls_string) % 2 == 1):
                         valid_input = True
                         for j in range(len(player_falls_string)):
@@ -712,7 +743,10 @@ for match_index in problematic_matches:
                 player_selfdestruct_string = ""
                 valid_input = False
                 while(valid_input == False):
+                    regex = f'[0-{MAX_LIVES}]'
                     player_selfdestruct_string = input(f'Enter G{i+1} selfdestructs: ')
+                    if(player_selfdestruct_string == "SKIP"):
+                        raise Skip
                     if(player_selfdestruct_string.isnumeric() and int(player_selfdestruct_string) <= MAX_LIVES):
                         valid_input = True
                     else:
@@ -730,7 +764,10 @@ for match_index in problematic_matches:
                 player_given_damage = ""
                 valid_input = False
                 while(valid_input == False):
+                    regex = "[0-9]+"
                     player_given_damage = input(f'Enter G{i+1} given damage (without percent): ')
+                    if(player_given_damage == "SKIP"):
+                        raise Skip
                     if(player_given_damage.isnumeric()):
                         valid_input = True
                     else:
@@ -741,7 +778,10 @@ for match_index in problematic_matches:
                 player_taken_damage = ""
                 valid_input = False
                 while(valid_input == False):
+                    regex = "[0-9]+"
                     player_taken_damage = input(f'Enter G{i+1} taken damage (without percent): ')
+                    if(player_taken_damage == "SKIP"):
+                        raise Skip
                     if(player_taken_damage.isnumeric()):
                         valid_input = True
                     else:
@@ -757,10 +797,10 @@ for match_index in problematic_matches:
 
 
             #--- CONVERT MATCH DATA TO A STRING ---#
-            output_strings[match_index] = convertMatchToString(dirs[2*match_index], PLAYERS, characters, positions, times, falls, given_damages, taken_damages)
+            output_strings[problematic_match[0]] = convertMatchToString(dirs[2*problematic_match[0]], PLAYERS, characters, positions, times, falls, given_damages, taken_damages)
 
         except InvalidData:
-            print("The data inserted has an error or is self-contradictory in some way. Please check and insert the data again. If the data doesn't have any error and isn't self-contradicotry, please type \"SKIP\" at the next prompt and add the data manually to the output.")
+            print("The data inserted has an error or is self-contradictory in some way. Please check and insert the data again. If the data doesn't have any error and isn't self-contradicotry, please enter \"SKIP\" at the next prompt and add the data manually to the output.")
             valid_data = False
         except Skip:
             valid_data = True
@@ -782,4 +822,3 @@ output_file.close()
 #--- CONCLUSION ---#
 print(f'elapsed time: {(time.time() - t):.3f} s')
 input("Press Enter to continue...")
-#--- ---#
