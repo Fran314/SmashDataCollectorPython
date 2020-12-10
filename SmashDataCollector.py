@@ -23,6 +23,9 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 class InvalidData(Exception):
     pass
 
+class Skip(Exception):
+    pass
+
 
 #--- CONSTANTS ---#
 PLAYERS = 3 # Number of players
@@ -122,6 +125,8 @@ CHARACTER_NAMES = [["MARIO",					"MARIO"],
                     ["ALEX",					"STEVE"],
                     ["ZOMBIE",					"STEVE"],
                     ["ENDERMAN",				"STEVE"]]
+
+SMALL_DIGIT_IMAGES = []
 
 POLARIZATION_THRESHOLD = 40
 
@@ -279,9 +284,7 @@ def getClosestDigit(image):
     distances = []
     image = polarizeImage(image, POLARIZATION_THRESHOLD)
     for i in range(11):
-        path = os.path.join(res_path, "small_digits",  str(i) + ".png")
-        digit_image = readImage(path)
-        distances.append(imageDistance(digit_image, image))
+        distances.append(imageDistance(SMALL_DIGIT_IMAGES[i], image))
     
     digit = numpy.argmin(distances)
     if(digit == 6 or digit == 8):
@@ -411,25 +414,31 @@ def showImage(image, text = "image", delay = 0):
     cv2.waitKey(delay)
 
 
+#--- PRELOAD MATCHES ---#
 dirs = mergeSort(os.listdir(data_path))
 if(len(dirs) % 2 != 0):
     print("Odd number of images present in data. Ignoring the last image.")
     dirs = dirs[:-1]
-
 tot_matches = int(len(dirs)/2)
 
+#--- LOAD RES ---#
 ap_stencils = []
+null_images = []
 for i in range(PLAYERS):
     ap_stencil_path = res_path + r'\ap_stencils\G' + str(i+1) + r'_ap_stencil.png'
     image = readImage(ap_stencil_path)
     ap_stencils.append(image)
 
-null_images = []
-for i in range(PLAYERS):
     null_image_path = res_path + r'\null_images\G' + str(i+1) + r'_null_image.png'
     image = readImage(null_image_path)
     null_images.append(image)
 
+for i in range(11):
+    digit_path = os.path.join(res_path, "small_digits",  str(i) + ".png")
+    SMALL_DIGIT_IMAGES.append(readImage(digit_path))
+
+
+#--- ANALYZE MATCHES ---#
 output_strings = []
 problematic_matches = []
 for match_index in range(tot_matches):
@@ -478,8 +487,7 @@ for match_index in range(tot_matches):
 
 
         #--- SECOND IMAGE ---#
-        anchor_points = []
-        selfdestructions = []
+        selfdestructs = []
         falls = []
         given_damages = []
         taken_damages = []
@@ -489,24 +497,23 @@ for match_index in range(tot_matches):
             stencil_width = ap_stencils[i].shape[1]
             data_height = second_data.shape[0]
             min_norm = imageDistance(ap_stencils[i], second_data[0 : stencil_height, AP_Xs[i] : (AP_Xs[i] + stencil_width)])
-            pos_y = 0
+            pos_min = 0
             for j in range(data_height - stencil_height):
                 curr_norm = imageDistance(ap_stencils[i], second_data[j : (j + stencil_height), AP_Xs[i] : (AP_Xs[i] + stencil_width)])
                 if(curr_norm < min_norm):
                     min_norm = curr_norm
-                    pos_y = j
+                    pos_min = j
+            anchor_point = pos_min
 
-            anchor_points.append(pos_y)
-
-            #--- GET SELFDESTRUCTS ---#
-            digit_y = anchor_points[i] + SELFDESTR_OFF_Y
+            #--- GET PLAYER SELFDESTRUCTS ---#
+            digit_y = anchor_point + SELFDESTR_OFF_Y
             digit_x = AP_Xs[i] + SELFDESTR_OFF_X
-            selfdestructions.append(getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH]))
+            selfdestructs.append(getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH]))
 
-            #--- GET FALLS ---#
+            #--- GET PLAYER FALLS ---#
             fall_list = []
             fall_icon_x = AP_Xs[i] + FALLS_AC_OFF_X
-            fall_icon_y = anchor_points[i] + FALLS_AC_OFF_Y
+            fall_icon_y = anchor_point + FALLS_AC_OFF_Y
             fall_image = second_data[fall_icon_y : fall_icon_y + FALL_ICON_SIZE, fall_icon_x : fall_icon_x + FALL_ICON_SIZE]
             killer = getClosestPlayer(fall_image, null_images[i], characters)
             if(killer != -1):
@@ -530,9 +537,9 @@ for match_index in range(tot_matches):
 
             falls.append(fall_list)
 
-            #--- GET GIVEN DAMAGE ---#
+            #--- GET PLAYER GIVEN DAMAGE ---#
             given_damage = 0
-            digit_y = anchor_points[i] + GIVEN_DMG_OFF_Y
+            digit_y = anchor_point + GIVEN_DMG_OFF_Y
             digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[0]
             given_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])*100
             digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[1]
@@ -541,9 +548,9 @@ for match_index in range(tot_matches):
             given_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])
             given_damages.append(given_damage)
             
-            #--- GET TAKEN DAMAGE ---#
+            #--- GET PLAYER TAKEN DAMAGE ---#
             taken_damage = 0
-            digit_y = anchor_points[i] + TAKEN_DMG_OFF_Y
+            digit_y = anchor_point + TAKEN_DMG_OFF_Y
             digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[0]
             taken_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])*100
             digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[1]
@@ -553,9 +560,9 @@ for match_index in range(tot_matches):
             taken_damages.append(taken_damage)
 
             #--- PLAYER - ERROR CHECKING ---#
-            if(positions[i] != 1 and (len(fall_list) + selfdestructions[i] != MAX_LIVES)):
+            if(positions[i] != 1 and (len(fall_list) + selfdestructs[i] != MAX_LIVES)):
                 raise InvalidData
-            if(positions[i] == 1 and (len(fall_list) + selfdestructions[i] >= MAX_LIVES)):
+            if(positions[i] == 1 and (len(fall_list) + selfdestructs[i] >= MAX_LIVES)):
                 raise InvalidData
             for j in fall_list:
                 if(j == i+1):
@@ -569,6 +576,7 @@ for match_index in range(tot_matches):
             raise InvalidData
 
 
+        #--- CONVERT MATCH DATA TO A STRING ---#
         match_string = "\"" + dirs[2*match_index][0:4] + "/" + dirs[2*match_index][4:6] + "/" + dirs[2*match_index][6:8] + "\", "
         match_string += "\"" + str(PLAYERS) + "\", "
         for i in range(PLAYERS):
@@ -578,11 +586,11 @@ for match_index in range(tot_matches):
             falls_string = ""
             for j in range(len(falls[i])):
                 falls_string += str(falls[i][j])
-                if(j < len(falls[i]) - 1 or selfdestructions[i] > 0):
+                if(j < len(falls[i]) - 1 or selfdestructs[i] > 0):
                     falls_string += ","
-            for j in range(selfdestructions[i]):
+            for j in range(selfdestructs[i]):
                 falls_string += str(i)
-                if(j < selfdestructions[i] - 1):
+                if(j < selfdestructs[i] - 1):
                     falls_string += ","
 
             match_string += "\"" + falls_string + "\", "
@@ -597,70 +605,158 @@ for match_index in range(tot_matches):
     except InvalidData:
         problematic_matches.append(match_index)
         output_strings.append("")
-        '''
-        print("Unable to read data. Please enter the data manually.")
-        valid_data = False
-        while(valid_data == False):
-            try:
-                valid_data = True
-                cv2.destroyAllWindows()
-                showImage(cv2.resize(first_data, (640, 360)), f'match {match_index+1}/{int(len(dirs)/2)}, first screenshot', 20)
-                characters = []
-                positions = []
-                times = []
-                for i in range(PLAYERS):
-                    player_character = ""
-                    valid_input = False
-                    while(valid_input == False):
-                        player_character = input(f'Enter G{i+1} character: ')
-                        for j in range(len(CHARACTER_NAMES)):
-                            if(player_character.upper() == CHARACTER_NAMES[j][0]):
-                                valid_input = True
-                                player_character = CHARACTER_NAMES[j][1]
-                        if(valid_input == False):
-                            print("Invalid input")
-                    characters.append(player_character)
 
-                    player_position = ""
-                    valid_input = False
-                    while(valid_input == False):
-                        player_position = input(f'Enter G{i+1} position: ')
-                        if(len(player_position) == 1 and ord(player_position[0]) >= 49 and ord(player_position[0]) <= 48 + PLAYERS):
-                            valid_input = True
-                        else:
-                            print("Invalid input")
-                    positions.append(int(player_position[0]))
 
-                    player_time = ""
-                    valid_input = False
-                    while(valid_input == False):
-                        player_time = input(f'Enter G{i+1} time [m:ss]: ')
-                        if(isValidTime(player_time)):
-                            valid_input = True
-                        else:
-                            print("Invalid input")
-                    times.append(player_time)
-                
-                valid_data = isValidFirstData(positions, times)
-                if(valid_data == False):
-                    print("The data inserted has an error or is self-contradictory in some way. Please check and insert the data again.")
-                print("The data inserted is valid!")
-                cv2.destroyAllWindows()
-            except InvalidData:
-                valid_data = False
-        '''
-
+#--- HANDLE PROBLEMATIC MATCHES ---#
 if(len(problematic_matches) > 0):
     print(f'Unable to read data of {len(problematic_matches)} matches out of {tot_matches}. Please enter the data manually.')
 match_counter = 0
 for match_index in problematic_matches:
     print(f'Problematic match #{match_counter+1} of {len(problematic_matches)} (match #{match_index})')
+
     first_data = readImage(os.path.join(data_path, dirs[2*match_index]))
     second_data = readImage(os.path.join(data_path, dirs[2*match_index + 1]))
+    valid_data = False
+    while(valid_data == False):
+        valid_data = True
+        try:
+            #--- FIRST IMAGE ---#
+            cv2.destroyAllWindows()
+            showImage(cv2.resize(first_data, (640, 360)), f'match {match_index+1}/{int(len(dirs)/2)}, first screenshot', 20)
+            characters = []
+            positions = []
+            times = []
+            for i in range(PLAYERS):
+                #--- GET PLAYER CHARACTER ---#
+                player_character = ""
+                valid_input = False
+                while(valid_input == False):
+                    player_character = input(f'Enter G{i+1} character: ')
+                    if(player_character == "SKIP"):
+                        raise Skip
+                    for j in range(len(CHARACTER_NAMES)):
+                        if(player_character.upper() == CHARACTER_NAMES[j][0]):
+                            valid_input = True
+                            player_character = CHARACTER_NAMES[j][1]
+                    if(valid_input == False):
+                        print("Invalid input")
+                characters.append(player_character)
 
+                #--- GET PLAYER POSITION ---#
+                player_position = ""
+                valid_input = False
+                while(valid_input == False):
+                    player_position = input(f'Enter G{i+1} position: ')
+                    if(len(player_position) == 1 and ord(player_position[0]) >= 49 and ord(player_position[0]) <= 48 + PLAYERS):
+                        valid_input = True
+                    else:
+                        print("Invalid input")
+                positions.append(int(player_position[0]))
+
+                #--- GET PLAYER TIME ---#
+                player_time = ""
+                valid_input = False
+                while(valid_input == False):
+                    player_time = input(f'Enter G{i+1} time [m:ss]: ')
+                    if(isValidTime(player_time)):
+                        valid_input = True
+                    else:
+                        print("Invalid input")
+                times.append(player_time)
+            
+            #--- FIRST DATA - ERROR CHECKING ---#
+            if(isValidFirstData(positions, times) == False):
+                raise InvalidData
+
+
+            #--- SECOND IMAGE ---#
+            cv2.destroyAllWindows()
+            showImage(cv2.resize(second_data, (640, 360)), f'match {match_index+1}/{int(len(dirs)/2)}, second screenshot', 20)
+            selfdestructs = []
+            falls = []
+            given_damages = []
+            taken_damages = []
+            for i in range(PLAYERS):
+                #--- GET PLAYER SELFDESTRUCTS --#
+                player_selfdestruct = ""
+                valid_input = False
+                while(valid_input == False):
+                    player_selfdestruct = input(f'Enter G{i+1} selfdestructs: ')
+                    if(len(player_selfdestruct) == 1 and ord(player_selfdestruct[0]) >= 48 and ord(player_selfdestruct[0]) <= 48 + MAX_LIVES):
+                        valid_input = True
+                    else:
+                        print("Invalid input")
+                selfdestructs.append(int(player_selfdestruct[0]))
+
+                #--- GET PLAYER FALLS ---#
+                player_falls_string = ""
+                valid_input = False
+                while(valid_input == False):
+                    player_falls_string = input(f'Enter G{i+1} falls (separated by commas): ')
+                    if(len(player_falls_string) == 0 or len(player_falls_string) % 2 == 1):
+                        valid_input = True
+                        for i in range(len(player_falls_string)):
+                            if(i % 2 == 0 and (ord(player_falls_string[i] < 49 or ord(player_falls_string[i] > 48 + PLAYERS)))):
+                                valid_input = False
+                            elif(i % 2 == 1 and player_falls_string[i] != ','):
+                                valid_input = False
+                    if(valid_input == False):
+                        print("Invalid input")
+                fall_list = []
+                for i in range(len(player_falls_string)):
+                    if(i % 2 == 0):
+                        fall_list.append(int(player_falls_string[i]))
+
+                #--- ERROR CHECKING ---#
+                if(positions[i] != 1 and (len(fall_list) + selfdestructs[i] != MAX_LIVES)):
+                    raise InvalidData
+                if(positions[i] == 1 and (len(fall_list) + selfdestructs[i] >= MAX_LIVES)):
+                    raise InvalidData
+                for j in fall_list:
+                    if(j == i+1):
+                        raise InvalidData
+                
+                #--- GET PLAYER GIVEN DAMAGE ---#
+                player_given_damage = ""
+                valid_input = False
+                while(valid_input == False):
+                    player_given_damage = input(f'Enter G{i+1} given damage (without percent): ')
+                    if(player_given_damage.isnumeric()):
+                        valid_input = True
+                    else:
+                        print("Invalid input")
+                given_damages.append(int(player_given_damage))
+
+                #--- GET PLAYER TAKEN DAMAGE ---#
+                player_taken_damage = ""
+                valid_input = False
+                while(valid_input == False):
+                    player_taken_damage = input(f'Enter G{i+1} taken damage (without percent): ')
+                    if(player_taken_damage.isnumeric()):
+                        valid_input = True
+                    else:
+                        print("Invalid input")
+                taken_damages.append(int(player_taken_damage))
+                
+            #--- SECOND DATA - ERROR CHECKING ---#
+            taken_given_dmg_difference = 0
+            for i in range(PLAYERS):
+                taken_given_dmg_difference += taken_damages[i] - given_damages[i]
+            if(taken_given_dmg_difference < 0 or taken_given_dmg_difference >= TAKEN_GIVEN_DMG_THRESHOLD):
+                raise InvalidData
+
+        except InvalidData:
+            print("The data inserted has an error or is self-contradictory in some way. Please check and insert the data again. If the data doesn't have any error and isn't self-contradicotry, please type \"SKIP\" at the next prompt and add the data manually to the output.")
+            valid_data = False
+        except Skip:
+            valid_data = True
+    
+    cv2.destroyAllWindows()
+    print("The data inserted is valid!")
     match_counter += 1
 
 
+#--- WRITE OUTPUT ---#
 output_file = open(os.path.join(output_path, "output.txt"), 'w')
 for match in output_strings[:-1]:
     output_file.write(match)
