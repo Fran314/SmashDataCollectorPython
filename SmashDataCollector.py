@@ -589,7 +589,7 @@ for match_index in range(tot_matches):
                 if(j < len(falls[i]) - 1 or selfdestructs[i] > 0):
                     falls_string += ","
             for j in range(selfdestructs[i]):
-                falls_string += str(i)
+                falls_string += str(i+1)
                 if(j < selfdestructs[i] - 1):
                     falls_string += ","
 
@@ -607,12 +607,17 @@ for match_index in range(tot_matches):
         output_strings.append("")
 
 
+#--- HalfWAY CHECKUP ---#
+if(len(problematic_matches) > 0):
+    print(f'elapsed time: {(time.time() - t):.3f} s')
+
+
 #--- HANDLE PROBLEMATIC MATCHES ---#
 if(len(problematic_matches) > 0):
     print(f'Unable to read data of {len(problematic_matches)} matches out of {tot_matches}. Please enter the data manually.')
 match_counter = 0
 for match_index in problematic_matches:
-    print(f'Problematic match #{match_counter+1} of {len(problematic_matches)} (match #{match_index})')
+    print(f'Problematic match #{match_counter+1} of {len(problematic_matches)} (match #{match_index+1})')
 
     first_data = readImage(os.path.join(data_path, dirs[2*match_index]))
     second_data = readImage(os.path.join(data_path, dirs[2*match_index + 1]))
@@ -695,17 +700,18 @@ for match_index in problematic_matches:
                     player_falls_string = input(f'Enter G{i+1} falls (separated by commas): ')
                     if(len(player_falls_string) == 0 or len(player_falls_string) % 2 == 1):
                         valid_input = True
-                        for i in range(len(player_falls_string)):
-                            if(i % 2 == 0 and (ord(player_falls_string[i] < 49 or ord(player_falls_string[i] > 48 + PLAYERS)))):
+                        for j in range(len(player_falls_string)):
+                            if(j % 2 == 0 and (ord(player_falls_string[j]) < 49 or ord(player_falls_string[j]) > 48 + PLAYERS)):
                                 valid_input = False
-                            elif(i % 2 == 1 and player_falls_string[i] != ','):
+                            elif(j % 2 == 1 and player_falls_string[j] != ','):
                                 valid_input = False
                     if(valid_input == False):
                         print("Invalid input")
                 fall_list = []
-                for i in range(len(player_falls_string)):
-                    if(i % 2 == 0):
-                        fall_list.append(int(player_falls_string[i]))
+                for j in range(len(player_falls_string)):
+                    if(j % 2 == 0):
+                        fall_list.append(int(player_falls_string[j]))
+                falls.append(fall_list)
 
                 #--- ERROR CHECKING ---#
                 if(positions[i] != 1 and (len(fall_list) + selfdestructs[i] != MAX_LIVES)):
@@ -794,5 +800,5 @@ output_file.close()
 
 #--- CONCLUSION ---#
 print(f'elapsed time: {(time.time() - t):.3f} s')
-#input("Press Enter to continue...")
+input("Press Enter to continue...")
 #--- ---#
