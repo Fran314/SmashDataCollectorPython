@@ -14,7 +14,6 @@ TAKEN_GIVEN_DMG_THRESHOLD = 30
 
 
 #--- INITIALIZATION ---#
-#os.system('mode con: cols=88 lines=30')
 t = time.time()
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
@@ -31,100 +30,100 @@ class Skip(Exception):
 PLAYERS = 3 # Number of players
 MAX_LIVES = 3
 
-CHARACTER_NAMES = [["MARIO",					"MARIO"],
-                    ["DONKEY KONG",				"DONKEY KONG"],
-                    ["LINK",					"LINK"],
-                    ["SAMUS",					"SAMUS"],
-                    ["SAMUS OSCURA",			"DARK SAMUS"],
-                    ["YOSHI",					"YOSHI"],
-                    ["KIRBY",					"KIRBY"],
-                    ["FOX",						"FOX"],
-                    ["PIKACHU",					"PIKACHU"],
-                    ["LUIGI",					"LUIGI"],
-                    ["NESS",					"NESS"],
-                    ["CAPTAIN FALCON",			"CAPTAIN FALCON"],
-                    ["JIGGLYPUFF",				"JIGGLYPUFF"],
-                    ["PEACH",					"PEACH"],
-                    ["DAISY",					"DAISY"],
-                    ["BOWSER",					"BOWSER"],
-                    ["ICE CLIMBERS",			"ICE CLIMBERS"],
-                    ["SHEIK",					"SHEIK"],
-                    ["ZELDA",					"ZELDA"],
-                    ["DR. MARIO",				"DR. MARIO"],
-                    ["PICHU",					"PICHU"],
-                    ["FALCO",					"FALCO"],
-                    ["MARTH",					"MARTH"],
-                    ["LUCINA",					"LUCINA"],
-                    ["LINK BAMBINO",			"YOUNG LINK"],
-                    ["GANONDORF",				"GANONDORF"],
-                    ["MEWTWO",					"MEWTWO"],
-                    ["ROY",						"ROY"],
-                    ["CHROM",					"CHROM"],
-                    ["MR. GAME & WATCH",		"MR. GAME & WATCH"],
-                    ["META KNIGHT",				"META KNIGHT"],
-                    ["PIT",						"PIT"],
-                    ["PIT OSCURO",				"DARK PIT"],
-                    ["SAMUS TUTA ZERO",			"ZERO SUIT SAMUS"],
-                    ["WARIO",					"WARIO"],
-                    ["SNAKE",					"SNAKE"],
-                    ["IKE",						"IKE"],
-                    ["ALLENATORE DI POKÉMON",	"POKÉMON TRAINER"],
-                    ["DIDDY KONG",				"DIDDY KONG"],
-                    ["LUCAS",					"LUCAS"],
-                    ["SONIC",					"SONIC"],
-                    ["KING DEDEDE",				"KING DEDEDE"],
-                    ["OLIMAR",					"OLIMAR"],
-                    ["LUCARIO",					"LUCARIO"],
-                    ["R.O.B.",					"R.O.B."],
-                    ["LINK CARTONE",			"TOON LINK"],
-                    ["WOLF",					"WOLF"],
-                    ["ABITANTE",				"VILLAGER"],
-                    ["MEGA MAN",				"MEGA MAN"],
-                    ["TRAINER DI WII FIT",		"WII FIT TRAINER"],
-                    ["ROSALINDA E SFAVILLOTTO",	"ROSALINA & LUMA"],
-                    ["LITTLE MAC",				"LITTLE MAC"],
-                    ["GRENINJA",				"GRENINJA"],
-                    ["GUERRIERO MII",			"MII FIGHTER"],
-                    ["LOTTATORE MII",			"MII FIGHTER"],
-                    ["SPADACCINO MII",			"MII FIGHTER"],
-                    ["FUCILIERE MII",			"MII FIGHTER"],
-                    ["PALUTENA",				"PALUTENA"],
-                    ["PAC-MAN",					"PAC-MAN"],
-                    ["DARAEN",					"ROBIN"],
-                    ["SHULK",					"SHULK"],
-                    ["BOWSER JUNIOR",			"BOWSER JR."],
-                    ["LARRY",					"BOWSER JR."],
-                    ["ROY",						"BOWSER JR."],
-                    ["WENDY",					"BOWSER JR."],
-                    ["IGGY",					"BOWSER JR."],
-                    ["MORTON",					"BOWSER JR."],
-                    ["LEMMY",					"BOWSER JR."],
-                    ["LUDWIG",					"BOWSER JR."],
-                    ["DUO DUCK HUNT",			"DUCK HUNT"],
-                    ["RYU",						"RYU"],
-                    ["KEN",						"KEN"],
-                    ["CLOUD",					"CLOUD"],
-                    ["CORRIN",					"CORRIN"],
-                    ["BAYONETTA",				"BAYONETTA"],
-                    ["RAGAZZO INKLING",			"INKLING"],
-                    ["RAGAZZA INKLING",			"INKLING"],
-                    ["RIDLEY",					"RIDLEY"],
-                    ["SIMON",					"SIMON"],
-                    ["RICHTER",					"RICHTER"],
-                    ["KING K. ROOL",			"KING K. ROOL"],
-                    ["FUFFI",					"ISABELLE"],
-                    ["INCINEROAR",				"INCINEROAR"],
-                    ["PIANTA PIRANHA",			"PIRANHA PLANT"],
-                    ["JOKER",					"JOKER"],
-                    ["EROE",					"HERO"],
-                    ["BANJO E KAZOOIE",			"BANJO & KAZOOIE"],
-                    ["TERRY",					"TERRY"],
-                    ["BYLETH",					"BLYETH"],
-                    ["MIN MIN",					"MIN MIN"],
-                    ["STEVE",					"STEVE"],
-                    ["ALEX",					"STEVE"],
-                    ["ZOMBIE",					"STEVE"],
-                    ["ENDERMAN",				"STEVE"]]
+CHARACTER_NAMES = [["MARIO",                    "Mario"],
+                    ["DONKEY KONG",             "Donkey Kong"],
+                    ["LINK",                    "Link"],
+                    ["SAMUS",                   "Samus"],
+                    ["SAMUS OSCURA",            "Dark Samus"],
+                    ["YOSHI",                   "Yoshi"],
+                    ["KIRBY",                   "Kirby"],
+                    ["FOX",                     "Fox"],
+                    ["PIKACHU",                 "Pikachu"],
+                    ["LUIGI",                   "Luigi"],
+                    ["NESS",                    "Ness"],
+                    ["CAPTAIN FALCON",          "Captain Falcon"],
+                    ["JIGGLYPUFF",              "Jigglypuff"],
+                    ["PEACH",                   "Peach"],
+                    ["DAISY",                   "Daisy"],
+                    ["BOWSER",                  "Bowser"],
+                    ["ICE CLIMBERS",            "Ice Climbers"],
+                    ["SHEIK",                   "Sheik"],
+                    ["ZELDA",                   "Zelda"],
+                    ["DR. MARIO",               "Dr. Mario"],
+                    ["PICHU",                   "Pichu"],
+                    ["FALCO",                   "Falco"],
+                    ["MARTH",                   "Marth"],
+                    ["LUCINA",                  "Lucina"],
+                    ["LINK BAMBINO",            "Young Link"],
+                    ["GANONDORF",               "Ganondorf"],
+                    ["MEWTWO",                  "Mewtwo"],
+                    ["ROY",                     "Roy"],
+                    ["CHROM",                   "Chrom"],
+                    ["MR. GAME & WATCH",        "Mr. Game & Watch"],
+                    ["META KNIGHT",             "Meta Knight"],
+                    ["PIT",                     "Pit"],
+                    ["PIT OSCURO",              "Dark Pit"],
+                    ["SAMUS TUTA ZERO",         "Zero Suit Samus"],
+                    ["WARIO",                   "Wario"],
+                    ["SNAKE",                   "Snake"],
+                    ["IKE",                     "Ike"],
+                    ["ALLENATORE DI POKÉMON",   "Pokémon Trainer"],
+                    ["DIDDY KONG",              "Diddy Kong"],
+                    ["LUCAS",                   "Lucas"],
+                    ["SONIC",                   "Sonic"],
+                    ["KING DEDEDE",             "King Dedede"],
+                    ["OLIMAR",                  "Olimar"],
+                    ["LUCARIO",                 "Lucario"],
+                    ["R.O.B.",                  "R.O.B."],
+                    ["LINK CARTONE",            "Toon Link"],
+                    ["WOLF",                    "Wolf"],
+                    ["ABITANTE",                "Villager"],
+                    ["MEGA MAN",                "Mega Man"],
+                    ["TRAINER DI WII FIT",      "Wii Fit Trainer"],
+                    ["ROSALINDA E SFAVILLOTTO", "Rosalina & Luma"],
+                    ["LITTLE MAC",              "Little Mac"],
+                    ["GRENINJA",                "Greninja"],
+                    ["GUERRIERO MII",           "Mii Fighter"],
+                    ["LOTTATORE MII",           "Mii Fighter"],
+                    ["SPADACCINO MII",          "Mii Fighter"],
+                    ["FUCILIERE MII",           "Mii Fighter"],
+                    ["PALUTENA",                "Palutena"],
+                    ["PAC-MAN",                 "Pac-Man"],
+                    ["DARAEN",                  "Robin"],
+                    ["SHULK",                   "Shulk"],
+                    ["BOWSER JUNIOR",           "Bowser Jr."],
+                    ["LARRY",                   "Bowser Jr."],
+                    ["ROY",                     "Bowser Jr."],
+                    ["WENDY",                   "Bowser Jr."],
+                    ["IGGY",                    "Bowser Jr."],
+                    ["MORTON",                  "Bowser Jr."],
+                    ["LEMMY",                   "Bowser Jr."],
+                    ["LUDWIG",                  "Bowser Jr."],
+                    ["DUO DUCK HUNT",           "Duck Hunt"],
+                    ["RYU",                     "Ryu"],
+                    ["KEN",                     "Ken"],
+                    ["CLOUD",                   "Cloud"],
+                    ["CORRIN",                  "Corrin"],
+                    ["BAYONETTA",               "Bayonetta"],
+                    ["RAGAZZO INKLING",         "Inkling"],
+                    ["RAGAZZA INKLING",         "Inkling"],
+                    ["RIDLEY",                  "Ridley"],
+                    ["SIMON",                   "Simon"],
+                    ["RICHTER",                 "Richter"],
+                    ["KING K. ROOL",            "King K. Rool"],
+                    ["FUFFI",                   "Isabelle"],
+                    ["INCINEROAR",              "Incineroar"],
+                    ["PIANTA PIRANHA",          "Piranha Plant"],
+                    ["JOKER",                   "Joker"],
+                    ["EROE",                    "Hero"],
+                    ["BANJO E KAZOOIE",         "Banjo & Kazooie"],
+                    ["TERRY",                   "Terry"],
+                    ["BYLETH",                  "Blyeth"],
+                    ["MIN MIN",                 "Min Min"],
+                    ["STEVE",                   "Steve"],
+                    ["ALEX",                    "Steve"],
+                    ["ZOMBIE",                  "Steve"],
+                    ["ENDERMAN",                "Steve"]]
 
 SMALL_DIGIT_IMAGES = []
 
@@ -387,6 +386,10 @@ def isValidFirstData(positions, times):
     return True
 
 
+def time2secstring(arg):
+    if(arg == ""):
+        return ""
+    return str(60 * int(arg[0]) + int(arg[2:4]))
 def convertTimesToSec(times):
     times_sec = []
     first_pos = 0
@@ -395,11 +398,36 @@ def convertTimesToSec(times):
             times_sec.append(0)
             first_pos = i
         else:
-            times_sec.append(60 * int(times[i][0]) + int(times[i][2:3]))
+            times_sec.append(60 * int(times[i][0]) + int(times[i][2:4]))
 
     times_sec[first_pos] = numpy.max(times_sec)
     return times_sec
-            
+
+
+def convertMatchToString(file_name, players, characters, positions, times, falls, given_damages, taken_damages):
+    match_string = file_name[0:4] + "/" + file_name[4:6] + "/" + file_name[6:8] + "\t"
+    match_string += str(players) + "\t"
+    for i in range(players):
+        match_string += characters[i] + "\t"
+        match_string += str(positions[i]) + "\t"
+
+        #falls_string = ','.join(map(str, falls[i])) 
+        falls_string = ""
+        for j in range(len(falls[i])):
+            falls_string += str(falls[i][j])
+            if(j < len(falls[i]) - 1):
+                falls_string += ","
+
+        match_string += falls_string + "\t"
+
+        match_string += str(given_damages[i]) + "\t"
+        match_string += str(taken_damages[i]) + "\t"
+        match_string += time2secstring(times[i])
+        if(i < players - 1):
+            match_string += "\t"
+    
+    return match_string
+
 
 def readImage(path):
     image = cv2.imread(path, flags=cv2.IMREAD_UNCHANGED)
@@ -439,6 +467,7 @@ for i in range(11):
 
 
 #--- ANALYZE MATCHES ---#
+error_message = ""
 output_strings = []
 problematic_matches = []
 for match_index in range(tot_matches):
@@ -487,7 +516,6 @@ for match_index in range(tot_matches):
 
 
         #--- SECOND IMAGE ---#
-        selfdestructs = []
         falls = []
         given_damages = []
         taken_damages = []
@@ -505,11 +533,6 @@ for match_index in range(tot_matches):
                     pos_min = j
             anchor_point = pos_min
 
-            #--- GET PLAYER SELFDESTRUCTS ---#
-            digit_y = anchor_point + SELFDESTR_OFF_Y
-            digit_x = AP_Xs[i] + SELFDESTR_OFF_X
-            selfdestructs.append(getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH]))
-
             #--- GET PLAYER FALLS ---#
             fall_list = []
             fall_icon_x = AP_Xs[i] + FALLS_AC_OFF_X
@@ -517,13 +540,15 @@ for match_index in range(tot_matches):
             fall_image = second_data[fall_icon_y : fall_icon_y + FALL_ICON_SIZE, fall_icon_x : fall_icon_x + FALL_ICON_SIZE]
             killer = getClosestPlayer(fall_image, null_images[i], characters)
             if(killer != -1):
+                if(killer == i):
+                    raise InvalidData
                 fall_list.append(killer + 1)
             
             fall_icon_x += FALLS_OFFSET
             fall_image = second_data[fall_icon_y : fall_icon_y + FALL_ICON_SIZE, fall_icon_x : fall_icon_x + FALL_ICON_SIZE]
             killer = getClosestPlayer(fall_image, null_images[i], characters)
             if(killer != -1):
-                if(len(fall_list) != 1):
+                if(killer == i or len(fall_list) != 1):
                     raise InvalidData
                 fall_list.append(killer + 1)
 
@@ -531,11 +556,25 @@ for match_index in range(tot_matches):
             fall_image = second_data[fall_icon_y : fall_icon_y + FALL_ICON_SIZE, fall_icon_x : fall_icon_x + FALL_ICON_SIZE]
             killer = getClosestPlayer(fall_image, null_images[i], characters)
             if(killer != -1):
-                if(len(fall_list) != 2):
+                if(killer == i or len(fall_list) != 2):
                     raise InvalidData
                 fall_list.append(killer + 1)
 
             falls.append(fall_list)
+
+            #--- GET PLAYER SELFDESTRUCTS ---#
+            digit_y = anchor_point + SELFDESTR_OFF_Y
+            digit_x = AP_Xs[i] + SELFDESTR_OFF_X
+            player_selfdestruct = getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])
+            for j in range(player_selfdestruct):
+                fall_list.append(i+1)
+
+            #--- FALLS AND SELFDESTRUCTS - ERROR CHECKING ---#
+            if(positions[i] != 1 and len(fall_list) != MAX_LIVES):
+                raise InvalidData
+            if(positions[i] == 1 and len(fall_list) >= MAX_LIVES):
+                raise InvalidData
+
 
             #--- GET PLAYER GIVEN DAMAGE ---#
             given_damage = 0
@@ -558,15 +597,6 @@ for match_index in range(tot_matches):
             digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[2]
             taken_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])
             taken_damages.append(taken_damage)
-
-            #--- PLAYER - ERROR CHECKING ---#
-            if(positions[i] != 1 and (len(fall_list) + selfdestructs[i] != MAX_LIVES)):
-                raise InvalidData
-            if(positions[i] == 1 and (len(fall_list) + selfdestructs[i] >= MAX_LIVES)):
-                raise InvalidData
-            for j in fall_list:
-                if(j == i+1):
-                    raise InvalidData
         
         #--- SECOND DATA - ERROR CHECKING ---#
         taken_given_dmg_difference = 0
@@ -577,37 +607,14 @@ for match_index in range(tot_matches):
 
 
         #--- CONVERT MATCH DATA TO A STRING ---#
-        match_string = "\"" + dirs[2*match_index][0:4] + "/" + dirs[2*match_index][4:6] + "/" + dirs[2*match_index][6:8] + "\", "
-        match_string += "\"" + str(PLAYERS) + "\", "
-        for i in range(PLAYERS):
-            match_string += "\"" + characters[i] + "\", "
-            match_string += "\"" + str(positions[i]) + "\", "
-
-            falls_string = ""
-            for j in range(len(falls[i])):
-                falls_string += str(falls[i][j])
-                if(j < len(falls[i]) - 1 or selfdestructs[i] > 0):
-                    falls_string += ","
-            for j in range(selfdestructs[i]):
-                falls_string += str(i+1)
-                if(j < selfdestructs[i] - 1):
-                    falls_string += ","
-
-            match_string += "\"" + falls_string + "\", "
-
-            match_string += "\"" + str(given_damages[i]) + "\", "
-            match_string += "\"" + str(taken_damages[i]) + "\", "
-            match_string += "\"" + str(times[i]) + "\""
-            if(i < PLAYERS - 1):
-                match_string += ", "
-        output_strings.append(match_string)
+        output_strings.append(convertMatchToString(dirs[2*match_index], PLAYERS, characters, positions, times, falls, given_damages, taken_damages))
 
     except InvalidData:
         problematic_matches.append(match_index)
         output_strings.append("")
 
 
-#--- HalfWAY CHECKUP ---#
+#--- HALFWAY CHECKUP ---#
 if(len(problematic_matches) > 0):
     print(f'elapsed time: {(time.time() - t):.3f} s')
 
@@ -677,22 +684,10 @@ for match_index in problematic_matches:
             #--- SECOND IMAGE ---#
             cv2.destroyAllWindows()
             showImage(cv2.resize(second_data, (640, 360)), f'match {match_index+1}/{int(len(dirs)/2)}, second screenshot', 20)
-            selfdestructs = []
             falls = []
             given_damages = []
             taken_damages = []
             for i in range(PLAYERS):
-                #--- GET PLAYER SELFDESTRUCTS --#
-                player_selfdestruct = ""
-                valid_input = False
-                while(valid_input == False):
-                    player_selfdestruct = input(f'Enter G{i+1} selfdestructs: ')
-                    if(len(player_selfdestruct) == 1 and ord(player_selfdestruct[0]) >= 48 and ord(player_selfdestruct[0]) <= 48 + MAX_LIVES):
-                        valid_input = True
-                    else:
-                        print("Invalid input")
-                selfdestructs.append(int(player_selfdestruct[0]))
-
                 #--- GET PLAYER FALLS ---#
                 player_falls_string = ""
                 valid_input = False
@@ -701,7 +696,7 @@ for match_index in problematic_matches:
                     if(len(player_falls_string) == 0 or len(player_falls_string) % 2 == 1):
                         valid_input = True
                         for j in range(len(player_falls_string)):
-                            if(j % 2 == 0 and (ord(player_falls_string[j]) < 49 or ord(player_falls_string[j]) > 48 + PLAYERS)):
+                            if(j % 2 == 0 and (player_falls_string[j].isnumeric() == False  or int(player_falls_string[j]) > PLAYERS or int(player_falls_string[j]) == i+1)):
                                 valid_input = False
                             elif(j % 2 == 1 and player_falls_string[j] != ','):
                                 valid_input = False
@@ -713,14 +708,23 @@ for match_index in problematic_matches:
                         fall_list.append(int(player_falls_string[j]))
                 falls.append(fall_list)
 
+                #--- GET PLAYER SELFDESTRUCTS --#
+                player_selfdestruct_string = ""
+                valid_input = False
+                while(valid_input == False):
+                    player_selfdestruct_string = input(f'Enter G{i+1} selfdestructs: ')
+                    if(player_selfdestruct_string.isnumeric() and int(player_selfdestruct_string) <= MAX_LIVES):
+                        valid_input = True
+                    else:
+                        print("Invalid input")
+                for j in range(int(player_selfdestruct_string)):
+                    fall_list.append(i+1)
+
                 #--- ERROR CHECKING ---#
-                if(positions[i] != 1 and (len(fall_list) + selfdestructs[i] != MAX_LIVES)):
+                if(positions[i] != 1 and len(fall_list) != MAX_LIVES):
                     raise InvalidData
-                if(positions[i] == 1 and (len(fall_list) + selfdestructs[i] >= MAX_LIVES)):
+                if(positions[i] == 1 and len(fall_list) >= MAX_LIVES):
                     raise InvalidData
-                for j in fall_list:
-                    if(j == i+1):
-                        raise InvalidData
                 
                 #--- GET PLAYER GIVEN DAMAGE ---#
                 player_given_damage = ""
@@ -753,30 +757,7 @@ for match_index in problematic_matches:
 
 
             #--- CONVERT MATCH DATA TO A STRING ---#
-            match_string = "\"" + dirs[2*match_index][0:4] + "/" + dirs[2*match_index][4:6] + "/" + dirs[2*match_index][6:8] + "\", "
-            match_string += "\"" + str(PLAYERS) + "\", "
-            for i in range(PLAYERS):
-                match_string += "\"" + characters[i] + "\", "
-                match_string += "\"" + str(positions[i]) + "\", "
-
-                falls_string = ""
-                for j in range(len(falls[i])):
-                    falls_string += str(falls[i][j])
-                    if(j < len(falls[i]) - 1 or selfdestructs[i] > 0):
-                        falls_string += ","
-                for j in range(selfdestructs[i]):
-                    falls_string += str(i)
-                    if(j < selfdestructs[i] - 1):
-                        falls_string += ","
-
-                match_string += "\"" + falls_string + "\", "
-
-                match_string += "\"" + str(given_damages[i]) + "\", "
-                match_string += "\"" + str(taken_damages[i]) + "\", "
-                match_string += "\"" + str(times[i]) + "\""
-                if(i < PLAYERS - 1):
-                    match_string += ", "
-            output_strings[match_index] = match_string
+            output_strings[match_index] = convertMatchToString(dirs[2*match_index], PLAYERS, characters, positions, times, falls, given_damages, taken_damages)
 
         except InvalidData:
             print("The data inserted has an error or is self-contradictory in some way. Please check and insert the data again. If the data doesn't have any error and isn't self-contradicotry, please type \"SKIP\" at the next prompt and add the data manually to the output.")
