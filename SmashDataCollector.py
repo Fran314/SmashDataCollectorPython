@@ -745,6 +745,33 @@ for match_index in problematic_matches:
             if(taken_given_dmg_difference < 0 or taken_given_dmg_difference >= TAKEN_GIVEN_DMG_THRESHOLD):
                 raise InvalidData
 
+
+            #--- CONVERT MATCH DATA TO A STRING ---#
+            match_string = "\"" + dirs[2*match_index][0:4] + "/" + dirs[2*match_index][4:6] + "/" + dirs[2*match_index][6:8] + "\", "
+            match_string += "\"" + str(PLAYERS) + "\", "
+            for i in range(PLAYERS):
+                match_string += "\"" + characters[i] + "\", "
+                match_string += "\"" + str(positions[i]) + "\", "
+
+                falls_string = ""
+                for j in range(len(falls[i])):
+                    falls_string += str(falls[i][j])
+                    if(j < len(falls[i]) - 1 or selfdestructs[i] > 0):
+                        falls_string += ","
+                for j in range(selfdestructs[i]):
+                    falls_string += str(i)
+                    if(j < selfdestructs[i] - 1):
+                        falls_string += ","
+
+                match_string += "\"" + falls_string + "\", "
+
+                match_string += "\"" + str(given_damages[i]) + "\", "
+                match_string += "\"" + str(taken_damages[i]) + "\", "
+                match_string += "\"" + str(times[i]) + "\""
+                if(i < PLAYERS - 1):
+                    match_string += ", "
+            output_strings[match_index] = match_string
+
         except InvalidData:
             print("The data inserted has an error or is self-contradictory in some way. Please check and insert the data again. If the data doesn't have any error and isn't self-contradicotry, please type \"SKIP\" at the next prompt and add the data manually to the output.")
             valid_data = False
