@@ -417,11 +417,11 @@ def readInput(prompt, regex):
     valid_input = False
     while(valid_input == False):
         user_input = input(prompt)
-        if(user_input = "SKIP"):
+        if(user_input == "SKIP"):
             raise Skip
-        elif(user_input = "SKIP ALL"):
+        elif(user_input == "SKIP ALL"):
             raise SkipAll
-        elif(re.match(regex, user_input.upper())):
+        elif(re.fullmatch(regex, user_input.upper())):
             valid_input = True
         else:
             print("Invalid input")
@@ -636,179 +636,111 @@ if(len(problematic_matches) > 0):
 
 #--- HANDLE PROBLEMATIC MATCHES ---#
 if(len(problematic_matches) > 0):
-    print(f'Unable to read data of {len(problematic_matches)} matches out of {tot_matches}. Please enter the data manually. You can skip any match at any time entering "SKIP"')
+    print(f'Unable to read data of {len(problematic_matches)} matches out of {tot_matches}. Please enter the data manually.')
 match_counter = 0
-for problematic_match in problematic_matches:
-    print(f'Problematic match #{match_counter+1} of {len(problematic_matches)} (match #{problematic_match[0]+1})')
-    print(f'Problem: {problematic_match[1]}')
+try:
+    for problematic_match in problematic_matches:
+        print(f'Problematic match #{match_counter+1} of {len(problematic_matches)} (match #{problematic_match[0]+1})')
+        print(f'Problem: {problematic_match[1]}')
 
-    first_data = readImage(os.path.join(data_path, dirs[2*problematic_match[0]]))
-    second_data = readImage(os.path.join(data_path, dirs[2*problematic_match[0] + 1]))
-    valid_data = False
-    while(valid_data == False):
-        valid_data = True
-        try:
-            #--- FIRST IMAGE ---#
-            cv2.destroyAllWindows()
-            showImage(cv2.resize(first_data, (640, 360)), f'match {problematic_match[0]+1}/{int(len(dirs)/2)}, first screenshot', 20)
-            characters = []
-            positions = []
-            times = []
-            for i in range(PLAYERS):
-                #--- GET PLAYER CHARACTER ---#
-                regex = f'({")|(".join([name[0] for name in CHARACTER_NAMES])})'
-                player_character = readInput(f'Enter G{i+1} character: ', regex)
-                for name in CHARACTER_NAMES:
-                    if(name[0] == player_character.upper()):
-                        player_character = name[1]
-                        break
-                player_character = CHARACTER_NAMES[CHARACTER_NAMES.index(player_character)]
-                valid_input = False
-                while(valid_input == False):
-                    player_character = input(f'Enter G{i+1} character: ')
-                    if(player_character == "SKIP"):
-                        raise Skip
-                    for j in range(len(CHARACTER_NAMES)):
-                        if(player_character.upper() == CHARACTER_NAMES[j][0]):
-                            valid_input = True
-                            player_character = CHARACTER_NAMES[j][1]
-                    if(valid_input == False):
-                        print("Invalid input")
-                characters.append(player_character)
-
-                #--- GET PLAYER POSITION ---#
-                player_position = ""
-                valid_input = False
-                while(valid_input == False):
-                    regex = f'[1-{PLAYERS}]'
-                    player_position = input(f'Enter G{i+1} position: ')
-                    if(player_position == "SKIP"):
-                        raise Skip
-                    if(len(player_position) == 1 and ord(player_position[0]) >= 49 and ord(player_position[0]) <= 48 + PLAYERS):
-                        valid_input = True
-                    else:
-                        print("Invalid input")
-                positions.append(int(player_position[0]))
-
-                #--- GET PLAYER TIME ---#
-                player_time = ""
-                valid_input = False
-                while(valid_input == False):
-                    regex = "([0-9]:[0-5][0-9])?"
-                    player_time = input(f'Enter G{i+1} time [m:ss]: ')
-                    if(player_time == "SKIP"):
-                        raise Skip
-                    if(isValidTime(player_time)):
-                        valid_input = True
-                    else:
-                        print("Invalid input")
-                times.append(player_time)
-            
-            #--- FIRST DATA - ERROR CHECKING ---#
-            if(isValidFirstData(positions, times) == False):
-                raise InvalidData
-
-
-            #--- SECOND IMAGE ---#
-            cv2.destroyAllWindows()
-            showImage(cv2.resize(second_data, (640, 360)), f'match {problematic_match[0]+1}/{int(len(dirs)/2)}, second screenshot', 20)
-            falls = []
-            given_damages = []
-            taken_damages = []
-            for i in range(PLAYERS):
-                #--- GET PLAYER FALLS ---#
-                player_falls_string = ""
-                valid_input = False
-                while(valid_input == False):
-                    regex = "([" + "".join(map(str, range(1, i+1))) + "".join(map(str, range(i+2, PLAYERS+1))) + "](,[" + "".join(map(str, range(1, i+1))) + "".join(map(str, range(i+2, PLAYERS+1))) + "]){0," + str(MAX_LIVES - 1) + "})?"
-                    player_falls_string = input(f'Enter G{i+1} falls (separated by commas): ')
-                    if(player_falls_string == "SKIP"):
-                        raise Skip
-                    if(len(player_falls_string) == 0 or len(player_falls_string) % 2 == 1):
-                        valid_input = True
-                        for j in range(len(player_falls_string)):
-                            if(j % 2 == 0 and (player_falls_string[j].isnumeric() == False  or int(player_falls_string[j]) > PLAYERS or int(player_falls_string[j]) == i+1)):
-                                valid_input = False
-                            elif(j % 2 == 1 and player_falls_string[j] != ','):
-                                valid_input = False
-                    if(valid_input == False):
-                        print("Invalid input")
-                fall_list = []
-                for j in range(len(player_falls_string)):
-                    if(j % 2 == 0):
-                        fall_list.append(int(player_falls_string[j]))
-                falls.append(fall_list)
-
-                #--- GET PLAYER SELFDESTRUCTS --#
-                player_selfdestruct_string = ""
-                valid_input = False
-                while(valid_input == False):
-                    regex = f'[0-{MAX_LIVES}]'
-                    player_selfdestruct_string = input(f'Enter G{i+1} selfdestructs: ')
-                    if(player_selfdestruct_string == "SKIP"):
-                        raise Skip
-                    if(player_selfdestruct_string.isnumeric() and int(player_selfdestruct_string) <= MAX_LIVES):
-                        valid_input = True
-                    else:
-                        print("Invalid input")
-                for j in range(int(player_selfdestruct_string)):
-                    fall_list.append(i+1)
-
-                #--- ERROR CHECKING ---#
-                if(positions[i] != 1 and len(fall_list) != MAX_LIVES):
-                    raise InvalidData
-                if(positions[i] == 1 and len(fall_list) >= MAX_LIVES):
-                    raise InvalidData
-                
-                #--- GET PLAYER GIVEN DAMAGE ---#
-                player_given_damage = ""
-                valid_input = False
-                while(valid_input == False):
-                    regex = "[0-9]+"
-                    player_given_damage = input(f'Enter G{i+1} given damage (without percent): ')
-                    if(player_given_damage == "SKIP"):
-                        raise Skip
-                    if(player_given_damage.isnumeric()):
-                        valid_input = True
-                    else:
-                        print("Invalid input")
-                given_damages.append(int(player_given_damage))
-
-                #--- GET PLAYER TAKEN DAMAGE ---#
-                player_taken_damage = ""
-                valid_input = False
-                while(valid_input == False):
-                    regex = "[0-9]+"
-                    player_taken_damage = input(f'Enter G{i+1} taken damage (without percent): ')
-                    if(player_taken_damage == "SKIP"):
-                        raise Skip
-                    if(player_taken_damage.isnumeric()):
-                        valid_input = True
-                    else:
-                        print("Invalid input")
-                taken_damages.append(int(player_taken_damage))
-                
-            #--- SECOND DATA - ERROR CHECKING ---#
-            taken_given_dmg_difference = 0
-            for i in range(PLAYERS):
-                taken_given_dmg_difference += taken_damages[i] - given_damages[i]
-            if(taken_given_dmg_difference < 0 or taken_given_dmg_difference >= TAKEN_GIVEN_DMG_THRESHOLD):
-                raise InvalidData
-
-
-            #--- CONVERT MATCH DATA TO A STRING ---#
-            output_strings[problematic_match[0]] = convertMatchToString(dirs[2*problematic_match[0]], PLAYERS, characters, positions, times, falls, given_damages, taken_damages)
-
-        except InvalidData:
-            print("The data inserted has an error or is self-contradictory in some way. Please check and insert the data again. If the data doesn't have any error and isn't self-contradicotry, please enter \"SKIP\" at the next prompt and add the data manually to the output.")
-            valid_data = False
-        except Skip:
+        first_data = readImage(os.path.join(data_path, dirs[2*problematic_match[0]]))
+        second_data = readImage(os.path.join(data_path, dirs[2*problematic_match[0] + 1]))
+        valid_data = False
+        while(valid_data == False):
             valid_data = True
-    
-    cv2.destroyAllWindows()
-    print("The data inserted is valid!")
-    match_counter += 1
+            print('At any time, you can enter "SKIP" to skip the current match or enter "SKIP ALL" to skip all the remaining matches.')
+            try:
+                #--- FIRST IMAGE ---#
+                cv2.destroyAllWindows()
+                showImage(cv2.resize(first_data, (640, 360)), f'match {problematic_match[0]+1}/{int(len(dirs)/2)}, first screenshot', 20)
+                characters = []
+                positions = []
+                times = []
+                for i in range(PLAYERS):
+                    #--- GET PLAYER CHARACTER ---#
+                    regex = f'({")|(".join([name[0] for name in CHARACTER_NAMES])})'
+                    player_character = readInput(f'Enter G{i+1} character: ', regex)
+                    for name in CHARACTER_NAMES:
+                        if(name[0] == player_character.upper()):
+                            player_character = name[1]
+                            break
+                    characters.append(player_character)
 
+                    #--- GET PLAYER POSITION ---#
+                    regex = f'[1-{PLAYERS}]'
+                    player_position = readInput(f'Enter G{i+1} position: ', regex)
+                    positions.append(int(player_position))
+
+                    #--- GET PLAYER TIME ---#
+                    regex = "([0-9]:[0-5][0-9])?"
+                    player_time = readInput(f'Enter G{i+1} time (m:ss): ', regex)
+                    times.append(player_time)
+                
+                #--- FIRST DATA - ERROR CHECKING ---#
+                if(isValidFirstData(positions, times) == False):
+                    raise InvalidData
+
+
+                #--- SECOND IMAGE ---#
+                cv2.destroyAllWindows()
+                showImage(cv2.resize(second_data, (640, 360)), f'match {problematic_match[0]+1}/{int(len(dirs)/2)}, second screenshot', 20)
+                falls = []
+                given_damages = []
+                taken_damages = []
+                for i in range(PLAYERS):
+                    #--- GET PLAYER FALLS ---#
+                    regex = "([" + "".join(map(str, range(1, i+1))) + "".join(map(str, range(i+2, PLAYERS+1))) + "](,[" + "".join(map(str, range(1, i+1))) + "".join(map(str, range(i+2, PLAYERS+1))) + "]){0," + str(MAX_LIVES - 1) + "})?"
+                    player_falls_string = readInput(f'Enter G{i+1} falls (separated by commas): ', regex)
+                    fall_list = []
+                    for j in range(len(player_falls_string)):
+                        if(j % 2 == 0):
+                            fall_list.append(int(player_falls_string[j]))
+                    falls.append(fall_list)
+
+                    #--- GET PLAYER SELFDESTRUCTS --#
+                    regex = f'[0-{MAX_LIVES}]'
+                    player_selfdestruct_string = readInput(f'Enter G{i+1} selfdestructs: ', regex)
+                    for j in range(int(player_selfdestruct_string)):
+                        fall_list.append(i+1)
+
+                    #--- ERROR CHECKING ---#
+                    if(positions[i] != 1 and len(fall_list) != MAX_LIVES):
+                        raise InvalidData
+                    if(positions[i] == 1 and len(fall_list) >= MAX_LIVES):
+                        raise InvalidData
+                    
+                    #--- GET PLAYER GIVEN DAMAGE ---#
+                    regex = "[0-9]+"
+                    player_given_damage = readInput(f'Enter G{i+1} given damage (without percent): ', regex)
+                    given_damages.append(int(player_given_damage))
+
+                    #--- GET PLAYER TAKEN DAMAGE ---#
+                    regex = "[0-9]+"
+                    player_taken_damage = readInput(f'Enter G{i+1} taken damage (without percent): ', regex)
+                    taken_damages.append(int(player_taken_damage))
+                    
+                #--- SECOND DATA - ERROR CHECKING ---#
+                taken_given_dmg_difference = 0
+                for i in range(PLAYERS):
+                    taken_given_dmg_difference += taken_damages[i] - given_damages[i]
+                if(taken_given_dmg_difference < 0 or taken_given_dmg_difference >= TAKEN_GIVEN_DMG_THRESHOLD):
+                    raise InvalidData
+
+
+                #--- CONVERT MATCH DATA TO A STRING ---#
+                output_strings[problematic_match[0]] = convertMatchToString(dirs[2*problematic_match[0]], PLAYERS, characters, positions, times, falls, given_damages, taken_damages)
+
+            except InvalidData:
+                print("The data inserted has an error or is self-contradictory in some way. Please check and insert the data again. If the data doesn't have any error and isn't self-contradicotry, please enter \"SKIP\" at the next prompt and add the data manually to the output.")
+                valid_data = False
+            except Skip:
+                valid_data = True
+        
+        cv2.destroyAllWindows()
+        print("The data inserted is valid!")
+        match_counter += 1
+except SkipAll:
+    pass
 
 #--- WRITE OUTPUT ---#
 output_file = open(os.path.join(output_path, "output.txt"), 'w')
