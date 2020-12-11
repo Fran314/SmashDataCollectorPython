@@ -11,6 +11,7 @@ data_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\data'
 res_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\res'
 output_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer'
 
+MAX_LIVES = 3
 TAKEN_GIVEN_DMG_THRESHOLD = 30
 
 
@@ -32,7 +33,6 @@ class SkipAll(Exception):
 
 #--- CONSTANTS ---#
 PLAYERS = 3 # Number of players
-MAX_LIVES = 3
 
 CHARACTER_NAMES = [["MARIO",                    "Mario"],
                     ["DONKEY KONG",             "Donkey Kong"],
@@ -536,6 +536,7 @@ for match_index in range(tot_matches):
             anchor_point = pos_min
 
             #--- GET PLAYER FALLS ---#
+            # TODO: 3 lives only
             fall_list = []
             fall_icon_x = AP_Xs[i] + FALLS_AC_OFF_X
             fall_icon_y = anchor_point + FALLS_AC_OFF_Y
@@ -582,10 +583,10 @@ for match_index in range(tot_matches):
 
             #--- FALLS AND SELFDESTRUCTS - ERROR CHECKING ---#
             if(positions[i] != 1 and len(fall_list) != MAX_LIVES):
-                error_message = f'G{i+1} (not in first position) died a number of times different from 3 ({fall_list})'
+                error_message = f'G{i+1} (not in first position) died a number of times different from {MAX_LIVES} ({fall_list})'
                 raise InvalidData
             if(positions[i] == 1 and len(fall_list) >= MAX_LIVES):
-                error_message = f'G{i+1} (in first position) died more than 2 times ({fall_list})'
+                error_message = f'G{i+1} (in first position) died more than {MAX_LIVES-1} times ({fall_list})'
                 raise InvalidData
 
 
@@ -678,6 +679,7 @@ try:
                 
                 #--- FIRST DATA - ERROR CHECKING ---#
                 if(isValidFirstData(positions, times) == False):
+                    error_message = f'positions ({positions}) and times ({times}) are invalid'
                     raise InvalidData
 
 
@@ -705,8 +707,10 @@ try:
 
                     #--- ERROR CHECKING ---#
                     if(positions[i] != 1 and len(fall_list) != MAX_LIVES):
+                        error_message = f'G{i+1} (not in first position) died a number of times different from {MAX_LIVES} ({fall_list})'
                         raise InvalidData
                     if(positions[i] == 1 and len(fall_list) >= MAX_LIVES):
+                        error_message = f'G{i+1} (in first position) died more than {MAX_LIVES-1} times ({fall_list})'
                         raise InvalidData
                     
                     #--- GET PLAYER GIVEN DAMAGE ---#
@@ -724,6 +728,7 @@ try:
                 for i in range(PLAYERS):
                     taken_given_dmg_difference += taken_damages[i] - given_damages[i]
                 if(taken_given_dmg_difference < 0 or taken_given_dmg_difference >= TAKEN_GIVEN_DMG_THRESHOLD):
+                    error_message = f'too big of a difference between total taken damage and total given damage ({taken_given_dmg_difference})'
                     raise InvalidData
 
 
@@ -731,7 +736,9 @@ try:
                 output_strings[problematic_match[0]] = convertMatchToString(dirs[2*problematic_match[0]], PLAYERS, characters, positions, times, falls, given_damages, taken_damages)
 
             except InvalidData:
-                print("The data inserted has an error or is self-contradictory in some way. Please check and insert the data again. If the data doesn't have any error and isn't self-contradicotry, please enter \"SKIP\" at the next prompt and add the data manually to the output.")
+                print("The data inserted has an error or is self-contradictory in some way.")
+                print("Problem: " + error_message)
+                print("Please check and insert the data again. If the data doesn't have any error and isn't actually self-contradicotry, please skip and add the data manually to the output.")
                 valid_data = False
             except Skip:
                 valid_data = True
