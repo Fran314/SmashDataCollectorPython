@@ -11,7 +11,7 @@ data_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\data'
 res_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\res'
 output_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer'
 
-MAX_LIVES = 3
+LIVES = 3
 TAKEN_GIVEN_DMG_THRESHOLD = 30
 
 
@@ -32,6 +32,7 @@ class SkipAll(Exception):
 
 
 #--- CONSTANTS ---#
+MAX_PLAYERS = 4 # Max number of players
 PLAYERS = 3 # Number of players
 
 CHARACTER_NAMES = [["MARIO",                    "Mario"],
@@ -77,6 +78,7 @@ CHARACTER_NAMES = [["MARIO",                    "Mario"],
                     ["SONIC",                   "Sonic"],
                     ["KING DEDEDE",             "King Dedede"],
                     ["OLIMAR",                  "Olimar"],
+                    ["ALPH",                    "Olimar"],
                     ["LUCARIO",                 "Lucario"],
                     ["R.O.B.",                  "R.O.B."],
                     ["LINK CARTONE",            "Toon Link"],
@@ -130,61 +132,66 @@ CHARACTER_NAMES = [["MARIO",                    "Mario"],
                     ["ENDERMAN",                "Steve"]]
 
 SMALL_DIGIT_IMAGES = []
+BIG_DIGIT_IMAGES = []
 
 POLARIZATION_THRESHOLD = 40
 
-FIRST_COL = numpy.array([251, 255, 0, 255]) # Color of the first place #1 icon
-SECOND_COL = numpy.array([204, 204, 204, 255]) # Color of the second place #2 icon
-THIRD_COL = numpy.array([240, 150, 12, 255]) # Color of the third place #3 icon
+# "Player pixel" = the pixel sampled used to determine the number of players based on its colour
+PLAYER_PIXEL = (657, 972)
 
-# "Sample point" = the pixel sampled to determine the position of each player based
-#   on the colour of the pixel (see previous constants)
-SAMPLE_POINT_Y = 44 # Y position of the sample point for every player
-SAMPLE_POINT_Xs = [354, # X position of the sample point for G1
-                    773, # X position of the sample point for G2
-                    1191] # X position of the sample point for G3
+# PLAYERS_COLS[i] = The colour of the player pixel if there are [i+2] players
+PLAYER_COLS = [numpy.array([0, 61, 150, 255]), 
+                numpy.array([144, 114, 0, 255]), 
+                numpy.array([0, 115, 20, 255])]
 
-# "Name rectangle" = the rectanlge containing the name of the caracter
-NAME_WIDTH = 226 # Width of the name rectangle
-NAME_HEIGHT = 77 # Height of the name rectangle
+# LEFT_EDGE[i,j] = the y-position of the left edge of the rectangle containing the information
+#   of the [j]th player when there are [i+2] players in total
+LEFT_EDGE = [[175, 701],
+            [19, 438, 857],
+            [0, 320, 640, 960]]
 
-NAME_Xs = [20,      # X position of the name rectangle for G1
-            441,    # X position of the name rectangle for G2
-            859]    # X position of the name rectangle for G3
-W_NAME_Y = 44 # Y position of the name rectangle for the winner
-L_NAME_Y = 28 # Y position of the name rectangle for a loser
+# RIGHT_EDGE[i,j] = the y-position of the right edge of the rectangle containing the information
+#   of the [j]th player when there are [i+2] players in total
+RIGHT_EDGE = [[579, 1105],
+            [423, 842, 1261],
+            [320, 640, 960, 1280]]
 
-# "Time rectangle" = the rectangle containing the time the player survived
-TIME_WIDTH = 200 # Width of the time rectangle
-TIME_HEIGHT = 90 # Height of the time rectangle
+ANCHOR_POINT_LD = [24, 24, 22]
 
-TIME_Y = 391 # Y position of the time rectangle
-TIME_Xs = [198,     # X position of the time rectangle for G1
-            614,    # X position of the time rectangle for G2
-            1033]   # X position of the time rectangle for G3
+PLACE_PIXEL_PY = 45
+PLACE_PIXEL_RD = [-68, -68, -43]
 
+PLACE_COLS = [numpy.array([255, 255, 0, 255]), 
+            numpy.array([204, 204, 204, 255]), 
+            numpy.array([241, 148, 17, 255]), 
+            numpy.array([185, 171, 207, 255])]
 
-# "Anchor point" = the top left corner of the subimage used to identify
-#   the position of the data. In this case we're using the rectangle
-#   containing the text "Autodistruzioni" as an anchor point
-AP_Xs = [43, # X position of the anchor point for G1
-        462, # X position of the anchor point for G2
-        880] # X position of the anchor point for G3
+NAME_WIDTH = 235
+NAME_HEIGHT = 77
+NAME_PY = [27, 27, 21]
+NAME_LD = 0
+WIN_OFFSET = 16
 
-SELFDESTR_OFF_X = 341
-SELFDESTR_OFF_Y = 32
+TIME_WIDTH = 191 + 40
+TIME_HEIGHT = 92 + 40
+TIME_PY = [389 - 20, 389 - 20, 384 - 20]
+TIME_RD = [-222 - 20, -222 - 20, -213 - 20]
 
-FALL_ICON_SIZE = 29
-FALLS_AC_OFF_X = 14 # Difference in X coordinates from the anchor point to the first fall icon
-FALLS_AC_OFF_Y = -44 # Difference in Y coordinates from the anchor point to the first fall icon
-FALLS_OFFSET = 33 # Offset on X coordinates between each fall icon
+FALL_ICON_SIZE = [29, 29, 25]
+FALL_ICON_YO = -43
+FALL_ICON_LD = [37, 37, 31]
+FALL_ICON_SEP = 33.3
 
-DAMAGE_OFF_Xs = [281, 300, 320]
-GIVEN_DMG_OFF_Y = 103
-TAKEN_DMG_OFF_Y = 174
+DIGIT_WIDTH = 17
+DIGIT_HEIGHT = 21
+DIGIT_SEP = 19.5
 
-DIGIT_WIDTH = 20
-DIGIT_HEIGHT = 25
+GVN_DMG_YO = 105
+TKN_DMG_YO = 175
+DMG_RD = -58
+
+SELFDESTR_YO = 35
+SELFDESTR_RD = -21
 
 
 #--- FUNCTIONS ---#
@@ -270,6 +277,10 @@ def polarizeImage(image_to_polarize, treshold):
     return to_return
 
 
+def submat(matrix, i, j, di, dj):
+    return matrix[i : i + di, j : j + dj]
+
+
 def getClosestPlayer(image, null_image, characters):
     distances = [imageDistance(null_image, image)]
     for i in range(len(characters)):
@@ -290,14 +301,12 @@ def getClosestDigit(image):
         distances.append(imageDistance(SMALL_DIGIT_IMAGES[i], image))
     
     digit = numpy.argmin(distances)
-    if(digit == 6 or digit == 8):
-        if(image[8,16,0] > 127):
-            return 8
-        else:
-            return 6
-    if(digit == 10):
-        return 0
-    return digit
+    # if(digit == 6 or digit == 8):
+    #     if(image[8,16,0] > 127):
+    #         return 8
+    #     else:
+    #         return 6
+    return digit-1
 
 
 def normalizeName(arg):
@@ -451,7 +460,7 @@ tot_matches = int(len(dirs)/2)
 #--- LOAD RES ---#
 ap_stencils = []
 null_images = []
-for i in range(PLAYERS):
+for i in range(MAX_PLAYERS):
     ap_stencil_path = res_path + r'\ap_stencils\G' + str(i+1) + r'_ap_stencil.png'
     image = readImage(ap_stencil_path)
     ap_stencils.append(image)
@@ -461,8 +470,10 @@ for i in range(PLAYERS):
     null_images.append(image)
 
 for i in range(11):
-    digit_path = os.path.join(res_path, "small_digits",  str(i) + ".png")
+    digit_path = os.path.join(res_path, "small_digits",  str(i-1) + ".png")
     SMALL_DIGIT_IMAGES.append(readImage(digit_path))
+    digit_path = os.path.join(res_path, "big_digits",  str(i-1) + ".png")
+    BIG_DIGIT_IMAGES.append(readImage(digit_path))
 
 
 #--- ANALYZE MATCHES ---#
@@ -476,145 +487,147 @@ for match_index in range(tot_matches):
 
     try:
         #--- FIRST IMAGE ---#
-        positions = []
+        places = []
         characters = []
         times = []
-        for i in range(PLAYERS):
-            #--- GET PLAYER POSITION ---#
-            col = first_data[SAMPLE_POINT_Y, SAMPLE_POINT_Xs[i]]
-            # TODO: 3 players only
-            positions.append(numpy.argmin(numpy.array([numpy.linalg.norm(col - FIRST_COL), numpy.linalg.norm(col - SECOND_COL), numpy.linalg.norm(col - THIRD_COL)]))+1)
+        
+        #--- GET NUMBER OF PLAYERS ---#
+        # TODO: 2-3-4 players only
+        player_col = first_data[PLAYER_PIXEL]
+        players = numpy.argmin([numpy.linalg.norm(player_col - colour) for colour in PLAYER_COLS])+2
+
+        for i in range(players):
+            #--- GET PLAYER PLACE ---#
+            curr_place_col = first_data[PLACE_PIXEL_PY, RIGHT_EDGE[players-2][i] + PLACE_PIXEL_RD[players-2]]
+            curr_place = numpy.argmin([numpy.linalg.norm(curr_place_col - place_col) for place_col in PLACE_COLS])+1
+            places.append(curr_place)
 
             #--- GET PLAYER CHARACTER ---#
-            if(positions[i] == 1):
-                name_rect = first_data[W_NAME_Y : (W_NAME_Y + NAME_HEIGHT), NAME_Xs[i] : (NAME_Xs[i] + NAME_WIDTH)]
+            if(places[i] != 1):
+                curr_name_rect = submat(first_data, NAME_PY[players-2], LEFT_EDGE[players-2][i] + NAME_LD, NAME_HEIGHT, NAME_WIDTH)
             else:
-                name_rect = first_data[L_NAME_Y : (L_NAME_Y + NAME_HEIGHT), NAME_Xs[i] : (NAME_Xs[i] + NAME_WIDTH)]
-            name_rect = polarizeImage(name_rect, POLARIZATION_THRESHOLD)
-            name = normalizeName(pytesseract.image_to_string(name_rect))
-            character_name_errors = numpy.zeros(len(CHARACTER_NAMES))
+                curr_name_rect = submat(first_data, NAME_PY[players-2] + WIN_OFFSET, LEFT_EDGE[players-2][i] + NAME_LD, NAME_HEIGHT, NAME_WIDTH)
+            curr_name_rect = polarizeImage(curr_name_rect, POLARIZATION_THRESHOLD)
+            curr_name = normalizeName(pytesseract.image_to_string(curr_name_rect))
+            character_name_ed = []
             for j in range(len(CHARACTER_NAMES)):
-                character_name_errors[j] = editDistance(name, CHARACTER_NAMES[j][0])
-            characters.append(CHARACTER_NAMES[numpy.argmin(character_name_errors)][1])
+                character_name_ed.append(editDistance(curr_name, CHARACTER_NAMES[j][0]))
+            min_index = numpy.argmin(character_name_ed)
+            if(character_name_ed[min_index] >= len(CHARACTER_NAMES[min_index][0]) / 2):
+                error_message = f'G{i+1}\'s name is too uncertain'
+                raise InvalidData
+            characters.append(CHARACTER_NAMES[min_index][1])
 
             #--- GET PLAYER TIME ---#
-            time_rect = first_data[TIME_Y : (TIME_Y + TIME_HEIGHT), TIME_Xs[i] : (TIME_Xs[i] + TIME_WIDTH)]
-            time_rect = polarizeImage(time_rect, POLARIZATION_THRESHOLD)
-            time_rect = cv2.resize(time_rect, (2*TIME_WIDTH, 2*TIME_HEIGHT))
-            times.append(normalizeTime(pytesseract.image_to_string(time_rect)))
+            curr_time_rect = submat(first_data, TIME_PY[players-2], RIGHT_EDGE[players-2][i] + TIME_RD[players-2], TIME_HEIGHT, TIME_WIDTH)
+            curr_time_rect = polarizeImage(curr_time_rect, POLARIZATION_THRESHOLD)
+            curr_time_rect = cv2.resize(curr_time_rect, (2*TIME_WIDTH, 2*TIME_HEIGHT))
+            curr_time = pytesseract.image_to_string(curr_time_rect)
+            times.append(normalizeTime(curr_time))
 
             #--- PLAYER - ERROR CHECKING ---#
-            if(positions[i] < 1 or positions[i] > PLAYERS):
-                error_message = f'G{i+1}\'s position ({positions[i]}) is invalid'
+            if(places[i] < 1 or places[i] > players):
+                error_message = f'G{i+1}\'s position ({places[i]}) is invalid'
                 raise InvalidData
             if(isValidTime(times[i]) == False):
                 error_message = f'G{i+1}\'s time ({times[i]}) is invalid'
                 raise InvalidData
         
         #--- FIRST DATA - ERROR CHECKING ---#
-        if(isValidFirstData(positions, times) == False):
-            error_message = f'positions ({positions}) and times ({times}) are invalid'
-            raise InvalidData
+        if(isValidFirstData(places, times) == False):
+            error_message = f'positions ({places}) and times ({times}) are invalid'
+            #raise InvalidData
 
 
         #--- SECOND IMAGE ---#
         falls = []
         given_damages = []
         taken_damages = []
-        for i in range(PLAYERS):
+        for i in range(players):
             #--- ESTABLISH ANCHOR POINTS ---#
             stencil_height = ap_stencils[i].shape[0]
             stencil_width = ap_stencils[i].shape[1]
             data_height = second_data.shape[0]
-            min_norm = imageDistance(ap_stencils[i], second_data[0 : stencil_height, AP_Xs[i] : (AP_Xs[i] + stencil_width)])
+            min_norm = imageDistance(ap_stencils[i], submat(second_data, 0, LEFT_EDGE[players-2][i] + ANCHOR_POINT_LD[players-2], stencil_height, stencil_width))
             pos_min = 0
             for j in range(data_height - stencil_height):
-                curr_norm = imageDistance(ap_stencils[i], second_data[j : (j + stencil_height), AP_Xs[i] : (AP_Xs[i] + stencil_width)])
+                curr_norm = imageDistance(ap_stencils[i], submat(second_data, j, LEFT_EDGE[players-2][i] + ANCHOR_POINT_LD[players-2], stencil_height, stencil_width))
                 if(curr_norm < min_norm):
                     min_norm = curr_norm
                     pos_min = j
             anchor_point = pos_min
 
             #--- GET PLAYER FALLS ---#
-            # TODO: 3 lives only
-            fall_list = []
-            fall_icon_x = AP_Xs[i] + FALLS_AC_OFF_X
-            fall_icon_y = anchor_point + FALLS_AC_OFF_Y
-            fall_image = second_data[fall_icon_y : fall_icon_y + FALL_ICON_SIZE, fall_icon_x : fall_icon_x + FALL_ICON_SIZE]
-            killer = getClosestPlayer(fall_image, null_images[i], characters)
-            if(killer != -1):
+            curr_fall_list = []
+            fall_icon_px = LEFT_EDGE[players-2][i] + FALL_ICON_LD[players-2]
+            fall_icon_py = anchor_point + FALL_ICON_YO
+            for j in range(LIVES):
+                fall_image = submat(second_data, fall_icon_py, int(fall_icon_px), FALL_ICON_SIZE[players-2], FALL_ICON_SIZE[players-2])
+                fall_image = cv2.resize(fall_image, (50,50))
+                killer = getClosestPlayer(fall_image, null_images[i], characters)
+                if(killer == -1):
+                    break
                 if(killer == i):
                     error_message = f'G{i+1}\'s first killer read as itself'
                     raise InvalidData
-                fall_list.append(killer + 1)
-            
-            fall_icon_x += FALLS_OFFSET
-            fall_image = second_data[fall_icon_y : fall_icon_y + FALL_ICON_SIZE, fall_icon_x : fall_icon_x + FALL_ICON_SIZE]
-            killer = getClosestPlayer(fall_image, null_images[i], characters)
-            if(killer != -1):
-                if(killer == i):
-                    error_message = f'G{i+1}\'s second killer read as itself'
-                    raise InvalidData
-                if(len(fall_list) != 1):
-                    error_message = f'G{i+1}\'s second killer read as not null while first was null'
-                    raise InvalidData
-                fall_list.append(killer + 1)
-
-            fall_icon_x += FALLS_OFFSET
-            fall_image = second_data[fall_icon_y : fall_icon_y + FALL_ICON_SIZE, fall_icon_x : fall_icon_x + FALL_ICON_SIZE]
-            killer = getClosestPlayer(fall_image, null_images[i], characters)
-            if(killer != -1):
-                if(killer == i):
-                    error_message = f'G{i+1}\'s third killer read as itself'
-                    raise InvalidData
-                if(len(fall_list) != 2):
-                    error_message = f'G{i+1}\'s third killer read as not null while second was null'
-                    raise InvalidData
-                fall_list.append(killer + 1)
-
-            falls.append(fall_list)
+                curr_fall_list.append(killer + 1)
+                fall_icon_px += FALL_ICON_SEP
 
             #--- GET PLAYER SELFDESTRUCTS ---#
-            digit_y = anchor_point + SELFDESTR_OFF_Y
-            digit_x = AP_Xs[i] + SELFDESTR_OFF_X
-            player_selfdestruct = getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])
-            for j in range(player_selfdestruct):
-                fall_list.append(i+1)
+            digit_y = anchor_point + SELFDESTR_YO
+            digit_x = RIGHT_EDGE[players-2][i] + SELFDESTR_RD
+            curr_selfdestruct = getClosestDigit(submat(second_data, digit_y, digit_x, DIGIT_HEIGHT, DIGIT_WIDTH))
+            for j in range(curr_selfdestruct):
+                curr_fall_list.append(i+1)
+
+            falls.append(curr_fall_list)
 
             #--- FALLS AND SELFDESTRUCTS - ERROR CHECKING ---#
-            if(positions[i] != 1 and len(fall_list) != MAX_LIVES):
-                error_message = f'G{i+1} (not in first position) died a number of times different from {MAX_LIVES} ({fall_list})'
+            if(places[i] != 1 and len(curr_fall_list) != LIVES):
+                error_message = f'G{i+1} (not in first place) died a number of times different from {LIVES} ({curr_fall_list})'
                 raise InvalidData
-            if(positions[i] == 1 and len(fall_list) >= MAX_LIVES):
-                error_message = f'G{i+1} (in first position) died more than {MAX_LIVES-1} times ({fall_list})'
+            if(places[i] == 1 and len(curr_fall_list) >= LIVES):
+                error_message = f'G{i+1} (in first place) died more than {LIVES-1} times ({curr_fall_list})'
                 raise InvalidData
 
 
             #--- GET PLAYER GIVEN DAMAGE ---#
             given_damage = 0
-            digit_y = anchor_point + GIVEN_DMG_OFF_Y
-            digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[0]
-            given_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])*100
-            digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[1]
-            given_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])*10
-            digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[2]
-            given_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])
+            digit_y = anchor_point + GVN_DMG_YO
+            digit_x = RIGHT_EDGE[players-2][i] + DMG_RD
+            digit = 0
+            decimal_place = 1
+            while(digit != -1):
+                digit_image = submat(second_data, digit_y, int(digit_x), DIGIT_HEIGHT, DIGIT_WIDTH)
+                digit = getClosestDigit(digit_image)
+                print(digit)
+                showImage(digit_image)
+                if(digit != -1):
+                    given_damage += digit*decimal_place
+                digit_x -= DIGIT_SEP
+                decimal_place *= 10
             given_damages.append(given_damage)
             
             #--- GET PLAYER TAKEN DAMAGE ---#
             taken_damage = 0
-            digit_y = anchor_point + TAKEN_DMG_OFF_Y
-            digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[0]
-            taken_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])*100
-            digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[1]
-            taken_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])*10
-            digit_x = AP_Xs[i] + DAMAGE_OFF_Xs[2]
-            taken_damage += getClosestDigit(second_data[digit_y : digit_y + DIGIT_HEIGHT, digit_x : digit_x + DIGIT_WIDTH])
+            digit_y = anchor_point + TKN_DMG_YO
+            digit_x = RIGHT_EDGE[players-2][i] + DMG_RD
+            digit = 0
+            decimal_place = 1
+            while(digit != -1):
+                digit_image = submat(second_data, digit_y, int(digit_x), DIGIT_HEIGHT, DIGIT_WIDTH)
+                digit = getClosestDigit(digit_image)
+                print(digit)
+                showImage(digit_image)
+                if(digit != -1):
+                    taken_damage += digit*decimal_place
+                digit_x -= DIGIT_SEP
+                decimal_place *= 10
             taken_damages.append(taken_damage)
         
         #--- SECOND DATA - ERROR CHECKING ---#
         taken_given_dmg_difference = 0
-        for i in range(PLAYERS):
+        for i in range(players):
             taken_given_dmg_difference += taken_damages[i] - given_damages[i]
         if(taken_given_dmg_difference < 0 or taken_given_dmg_difference >= TAKEN_GIVEN_DMG_THRESHOLD):
             error_message = f'too big of a difference between total taken damage and total given damage ({taken_given_dmg_difference})'
@@ -622,7 +635,7 @@ for match_index in range(tot_matches):
 
 
         #--- CONVERT MATCH DATA TO A STRING ---#
-        output_strings.append(convertMatchToString(dirs[2*match_index], PLAYERS, characters, positions, times, falls, given_damages, taken_damages))
+        output_strings.append(convertMatchToString(dirs[2*match_index], players, characters, places, times, falls, given_damages, taken_damages))
 
     except InvalidData:
         problematic_matches.append([match_index, error_message])
@@ -633,6 +646,15 @@ for match_index in range(tot_matches):
 #--- HALFWAY CHECKUP ---#
 if(len(problematic_matches) > 0):
     print(f'elapsed time: {(time.time() - t):.3f} s')
+
+    
+#--- WRITE OUTPUT ---#
+output_file = open(os.path.join(output_path, "output.tsv"), 'w')
+for match in output_strings[:-1]:
+    output_file.write(match)
+    output_file.write("\n")
+output_file.write(output_strings[-1])
+output_file.close()
 
 
 #--- HANDLE PROBLEMATIC MATCHES ---#
@@ -691,7 +713,7 @@ try:
                 taken_damages = []
                 for i in range(PLAYERS):
                     #--- GET PLAYER FALLS ---#
-                    regex = "([" + "".join(map(str, range(1, i+1))) + "".join(map(str, range(i+2, PLAYERS+1))) + "](,[" + "".join(map(str, range(1, i+1))) + "".join(map(str, range(i+2, PLAYERS+1))) + "]){0," + str(MAX_LIVES - 1) + "})?"
+                    regex = "([" + "".join(map(str, range(1, i+1))) + "".join(map(str, range(i+2, PLAYERS+1))) + "](,[" + "".join(map(str, range(1, i+1))) + "".join(map(str, range(i+2, PLAYERS+1))) + "]){0," + str(LIVES - 1) + "})?"
                     player_falls_string = readInput(f'Enter G{i+1} falls (separated by commas): ', regex)
                     fall_list = []
                     for j in range(len(player_falls_string)):
@@ -700,17 +722,17 @@ try:
                     falls.append(fall_list)
 
                     #--- GET PLAYER SELFDESTRUCTS --#
-                    regex = f'[0-{MAX_LIVES}]'
+                    regex = f'[0-{LIVES}]'
                     player_selfdestruct_string = readInput(f'Enter G{i+1} selfdestructs: ', regex)
                     for j in range(int(player_selfdestruct_string)):
                         fall_list.append(i+1)
 
                     #--- ERROR CHECKING ---#
-                    if(positions[i] != 1 and len(fall_list) != MAX_LIVES):
-                        error_message = f'G{i+1} (not in first position) died a number of times different from {MAX_LIVES} ({fall_list})'
+                    if(positions[i] != 1 and len(fall_list) != LIVES):
+                        error_message = f'G{i+1} (not in first position) died a number of times different from {LIVES} ({fall_list})'
                         raise InvalidData
-                    if(positions[i] == 1 and len(fall_list) >= MAX_LIVES):
-                        error_message = f'G{i+1} (in first position) died more than {MAX_LIVES-1} times ({fall_list})'
+                    if(positions[i] == 1 and len(fall_list) >= LIVES):
+                        error_message = f'G{i+1} (in first position) died more than {LIVES-1} times ({fall_list})'
                         raise InvalidData
                     
                     #--- GET PLAYER GIVEN DAMAGE ---#
@@ -750,7 +772,7 @@ except SkipAll:
     pass
 
 #--- WRITE OUTPUT ---#
-output_file = open(os.path.join(output_path, "output.txt"), 'w')
+output_file = open(os.path.join(output_path, "output.tsv"), 'w')
 for match in output_strings[:-1]:
     output_file.write(match)
     output_file.write("\n")
