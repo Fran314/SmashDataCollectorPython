@@ -7,9 +7,9 @@ from cv2 import cv2
 import re
 
 #--- CUSTOMIZEABLE ---#
-data_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\data'
-res_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer\res'
-output_path = r'C:\Users\franc\Documents\VSCode\SmashDataAnalyzer'
+data_path = r'E:\Archivio\Programmazione\VSCode\SmashDataAnalyzer\data'
+res_path = r'E:\Archivio\Programmazione\VSCode\SmashDataAnalyzer\res'
+output_path = r'E:\Archivio\Programmazione\VSCode\SmashDataAnalyzer'
 
 LIVES = 3
 TAKEN_GIVEN_DMG_THRESHOLD = 30
@@ -89,10 +89,6 @@ CHARACTER_NAMES = [["MARIO",                    "Mario"],
                     ["ROSALINDA E SFAVILLOTTO", "Rosalina & Luma"],
                     ["LITTLE MAC",              "Little Mac"],
                     ["GRENINJA",                "Greninja"],
-                    ["GUERRIERO MII",           "Mii Fighter"],
-                    ["LOTTATORE MII",           "Mii Fighter"],
-                    ["SPADACCINO MII",          "Mii Fighter"],
-                    ["FUCILIERE MII",           "Mii Fighter"],
                     ["PALUTENA",                "Palutena"],
                     ["PAC-MAN",                 "Pac-Man"],
                     ["DARAEN",                  "Robin"],
@@ -124,7 +120,7 @@ CHARACTER_NAMES = [["MARIO",                    "Mario"],
                     ["EROE",                    "Hero"],
                     ["BANJO E KAZOOIE",         "Banjo & Kazooie"],
                     ["TERRY",                   "Terry"],
-                    ["BYLETH",                  "Blyeth"],
+                    ["BYLETH",                  "Byleth"],
                     ["MIN MIN",                 "Min Min"],
                     ["STEVE",                   "Steve"],
                     ["ALEX",                    "Steve"],
@@ -174,17 +170,21 @@ WIN_OFFSET = 16
 
 TIME_WIDTH = 191 + 40
 TIME_HEIGHT = 92 + 40
-TIME_PY = [389 - 20, 389 - 20, 384 - 20]
-TIME_RD = [-222 - 20, -222 - 20, -213 - 20]
+TIME_PY = [404, 404, 399]
+TIME_SEC_RD = [-90, -90, -81]
+TIME_DEC_SEP = -48
+TIME_MIN_SEP = -75
 
 FALL_ICON_SIZE = [29, 29, 25]
 FALL_ICON_YO = -43
 FALL_ICON_LD = [37, 37, 31]
 FALL_ICON_SEP = 33.3
 
-DIGIT_WIDTH = 17
-DIGIT_HEIGHT = 21
-DIGIT_SEP = 19.5
+BIG_DIGIT_WIDTH = 44
+BIG_DIGIT_HEIGHT = 63
+SMALL_DIGIT_WIDTH = 17
+SMALL_DIGIT_HEIGHT = 21
+SMALL_DIGIT_SEP = 19.5
 
 GVN_DMG_YO = 105
 TKN_DMG_YO = 175
@@ -241,20 +241,20 @@ def mergeSort(arg):
 
 
 def imageDistance(stencil, image):
-    stencil_shape = stencil.shape
-    image_shape = image.shape
-    if(stencil_shape != image_shape):
-        if(len(stencil_shape) == 1):
-            stencil_norm = numpy.linalg.norm(stencil)
-        else:
-            stencil_norm = numpy.linalg.norm(stencil[:,:])
+    # stencil_shape = stencil.shape
+    # image_shape = image.shape
+    # if(stencil_shape != image_shape):
+    #     if(len(stencil_shape) == 1):
+    #         stencil_norm = numpy.linalg.norm(stencil)
+    #     else:
+    #         stencil_norm = numpy.linalg.norm(stencil[:,:])
         
-        if(len(image_shape) == 1):
-            image_norm = numpy.linalg.norm(image)
-        else:
-            image_norm = numpy.linalg.norm(image[:,:])
+    #     if(len(image_shape) == 1):
+    #         image_norm = numpy.linalg.norm(image)
+    #     else:
+    #         image_norm = numpy.linalg.norm(image[:,:])
 
-        return 3*numpy.max(2*stencil_norm, 2*image_norm)
+    #     return 3*numpy.max(2*stencil_norm, 2*image_norm)
 
     distance = numpy.linalg.norm(numpy.multiply((stencil[:,:,0]/1.0 - image[:,:,0]/1.0), stencil[:,:,3]/255.0))
     distance += numpy.linalg.norm(numpy.multiply((stencil[:,:,1]/1.0 - image[:,:,1]/1.0), stencil[:,:,3]/255.0))
@@ -294,18 +294,12 @@ def getClosestPlayer(image, null_image, characters):
     return numpy.argmin(distances) - 1
 
 
-def getClosestDigit(image):
+def getClosestDigit(image, digit_images):
     distances = []
-    image = polarizeImage(image, POLARIZATION_THRESHOLD)
     for i in range(11):
-        distances.append(imageDistance(SMALL_DIGIT_IMAGES[i], image))
+        distances.append(imageDistance(digit_images[i], image))
     
     digit = numpy.argmin(distances)
-    # if(digit == 6 or digit == 8):
-    #     if(image[8,16,0] > 127):
-    #         return 8
-    #     else:
-    #         return 6
     return digit-1
 
 
@@ -345,6 +339,12 @@ def folderizeName(arg):
             to_return += c
         elif(ord(c) >= 65 and ord(c) <= 90):
             to_return += chr(ord(c) + 32)
+        elif(c == ' ' or c =='-'):
+            to_return += ' '
+        elif(c == 'é'):
+            to_return += 'e'
+        elif(c == '&'):
+            to_return += "and"
     return to_return
 
 
@@ -519,11 +519,27 @@ for match_index in range(tot_matches):
             characters.append(CHARACTER_NAMES[min_index][1])
 
             #--- GET PLAYER TIME ---#
-            curr_time_rect = submat(first_data, TIME_PY[players-2], RIGHT_EDGE[players-2][i] + TIME_RD[players-2], TIME_HEIGHT, TIME_WIDTH)
-            curr_time_rect = polarizeImage(curr_time_rect, POLARIZATION_THRESHOLD)
-            curr_time_rect = cv2.resize(curr_time_rect, (2*TIME_WIDTH, 2*TIME_HEIGHT))
-            curr_time = pytesseract.image_to_string(curr_time_rect)
-            times.append(normalizeTime(curr_time))
+            curr_time = ""
+            digit_x = RIGHT_EDGE[players-2][i] + TIME_SEC_RD[players-2]
+            digit_y = TIME_PY[players-2]
+            digit_image = submat(first_data, digit_y, digit_x, BIG_DIGIT_HEIGHT, BIG_DIGIT_WIDTH)
+            digit_image = polarizeImage(digit_image, POLARIZATION_THRESHOLD)
+            digit = getClosestDigit(digit_image, BIG_DIGIT_IMAGES)
+            if(digit != -1):
+                curr_time = str(digit)
+
+                digit_x += TIME_DEC_SEP
+                digit_image = submat(first_data, digit_y, digit_x, BIG_DIGIT_HEIGHT, BIG_DIGIT_WIDTH)
+                digit_image = polarizeImage(digit_image, POLARIZATION_THRESHOLD)
+                digit = getClosestDigit(digit_image, BIG_DIGIT_IMAGES)
+                curr_time = str(digit) + curr_time
+
+                digit_x += TIME_MIN_SEP
+                digit_image = submat(first_data, digit_y, digit_x, BIG_DIGIT_HEIGHT, BIG_DIGIT_WIDTH)
+                digit_image = polarizeImage(digit_image, POLARIZATION_THRESHOLD)
+                digit = getClosestDigit(digit_image, BIG_DIGIT_IMAGES)
+                curr_time = str(digit) + ":" + curr_time
+            times.append(curr_time)
 
             #--- PLAYER - ERROR CHECKING ---#
             if(places[i] < 1 or places[i] > players):
@@ -576,7 +592,9 @@ for match_index in range(tot_matches):
             #--- GET PLAYER SELFDESTRUCTS ---#
             digit_y = anchor_point + SELFDESTR_YO
             digit_x = RIGHT_EDGE[players-2][i] + SELFDESTR_RD
-            curr_selfdestruct = getClosestDigit(submat(second_data, digit_y, digit_x, DIGIT_HEIGHT, DIGIT_WIDTH))
+            digit_image = submat(second_data, digit_y, digit_x, SMALL_DIGIT_HEIGHT, SMALL_DIGIT_WIDTH)
+            digit_image = polarizeImage(digit_image, POLARIZATION_THRESHOLD)
+            curr_selfdestruct = getClosestDigit(digit_image, SMALL_DIGIT_IMAGES)
             for j in range(curr_selfdestruct):
                 curr_fall_list.append(i+1)
 
@@ -598,13 +616,12 @@ for match_index in range(tot_matches):
             digit = 0
             decimal_place = 1
             while(digit != -1):
-                digit_image = submat(second_data, digit_y, int(digit_x), DIGIT_HEIGHT, DIGIT_WIDTH)
-                digit = getClosestDigit(digit_image)
-                print(digit)
-                showImage(digit_image)
+                digit_image = submat(second_data, digit_y, int(digit_x), SMALL_DIGIT_HEIGHT, SMALL_DIGIT_WIDTH)
+                digit_image = polarizeImage(digit_image, POLARIZATION_THRESHOLD)
+                digit = getClosestDigit(digit_image, SMALL_DIGIT_IMAGES)
                 if(digit != -1):
                     given_damage += digit*decimal_place
-                digit_x -= DIGIT_SEP
+                digit_x -= SMALL_DIGIT_SEP
                 decimal_place *= 10
             given_damages.append(given_damage)
             
@@ -615,13 +632,12 @@ for match_index in range(tot_matches):
             digit = 0
             decimal_place = 1
             while(digit != -1):
-                digit_image = submat(second_data, digit_y, int(digit_x), DIGIT_HEIGHT, DIGIT_WIDTH)
-                digit = getClosestDigit(digit_image)
-                print(digit)
-                showImage(digit_image)
+                digit_image = submat(second_data, digit_y, int(digit_x), SMALL_DIGIT_HEIGHT, SMALL_DIGIT_WIDTH)
+                digit_image = polarizeImage(digit_image, POLARIZATION_THRESHOLD)
+                digit = getClosestDigit(digit_image, SMALL_DIGIT_IMAGES)
                 if(digit != -1):
                     taken_damage += digit*decimal_place
-                digit_x -= DIGIT_SEP
+                digit_x -= SMALL_DIGIT_SEP
                 decimal_place *= 10
             taken_damages.append(taken_damage)
         
