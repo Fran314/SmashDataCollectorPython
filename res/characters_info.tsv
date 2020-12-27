@@ -1,3 +1,6 @@
+# Since moving to image recognition instead of text recognition for recognising which character is being played (as to make the recognition more reliable and language-indipendent), I need a screenshot for all the characters in order to tell the program what to look for for each character.
+# As I don't have some of the DLC characters, some reference closeups are missing, which means those characters are not supported. The characters not supported are commented out of this list with an '#'. The '#' is not a .tsv convention for comments line but I chose it to be this way.
+# If you wish for an unsupported character to be supported, you can send me a screenshots of the the second result screen (the one with the "Out at" time) with the character you want to add, both of matches with 3 and 4 players (CPU is ok) and possibly where the wanted character doesn't win, and I'll do the rest. I can be more precise if you contact me.
 Mario	mario
 Donkey Kong	donkey_kong
 Link	link
@@ -70,11 +73,11 @@ King K. Rool	king_k_rool
 Isabelle	isabelle
 Incineroar	incineroar
 Piranha Plant	piranha_plant
-Joker	joker
-Hero	dq_hero
-Banjo & Kazooie	banjo_and_kazooie
-Terry	terry
-Byleth	byleth
+# Joker	joker
+# Hero	dq_hero
+# Banjo & Kazooie	banjo_and_kazooie
+# Terry	terry
+# Byleth	byleth
 Min Min	minmin
 Steve	steve
-Sephiroth	sephiroth
+# Sephiroth	sephiroth
