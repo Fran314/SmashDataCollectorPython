@@ -12,7 +12,7 @@ MAX_PLAYERS = 4 # Max number of players
 
 CHARACTER_INFOS = readTSV(os.path.join(res_path, "characters_info.tsv"))
 CHARACTER_CLOSEUPS = []
-characters_tile = cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "23closeups.png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
+characters_tile = cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "23-closeups.png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
 tile_height = int(characters_tile.shape[0] / len(CHARACTER_INFOS))
 tile_width = int(characters_tile.shape[1] / 8)
 main_list = []
@@ -28,6 +28,11 @@ for i in range(len(CHARACTER_INFOS)):
 #   having two copies of the same massive list of closeups, but two small references to the same list of closeups
 CHARACTER_CLOSEUPS.append(main_list)
 CHARACTER_CLOSEUPS.append(main_list)
+
+CHARACTER_CLOSEUPS_MASKS = [[cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "23-lose_mask.png")), cv2.COLOR_BGR2GRAY),
+                            cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "23-win_mask.png")), cv2.COLOR_BGR2GRAY)],
+                            [cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "23-lose_mask.png")), cv2.COLOR_BGR2GRAY),
+                            cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "23-win_mask.png")), cv2.COLOR_BGR2GRAY)]]
 
 CHARACTER_ICONS = []
 characters_tile = cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "icons.png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)

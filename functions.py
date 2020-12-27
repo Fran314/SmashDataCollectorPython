@@ -55,14 +55,6 @@ def mergeSort(arg):
     return arg
 
 
-# def imageDistance(stencil, image):
-#     distance = numpy.linalg.norm(numpy.multiply((stencil[:,:,0]/1.0 - image[:,:,0]/1.0), stencil[:,:,3]/255.0))
-#     distance += numpy.linalg.norm(numpy.multiply((stencil[:,:,1]/1.0 - image[:,:,1]/1.0), stencil[:,:,3]/255.0))
-#     distance += numpy.linalg.norm(numpy.multiply((stencil[:,:,2]/1.0 - image[:,:,2]/1.0), stencil[:,:,3]/255.0))
-
-#     return distance
-
-
 def polarizeImage(image_to_polarize, treshold):
     height = image_to_polarize.shape[0]
     width = image_to_polarize.shape[1]
@@ -71,7 +63,7 @@ def polarizeImage(image_to_polarize, treshold):
         for j in range(width):
             if(numpy.linalg.norm(image_to_polarize[i,j] - numpy.array([255, 255, 255])) > treshold):
                 to_return[i,j] = numpy.array([0, 0, 0])
-    return to_return
+    return cv2.cvtColor(to_return, cv2.COLOR_BGR2GRAY)
 
 
 def submat(matrix, i, j, di, dj):

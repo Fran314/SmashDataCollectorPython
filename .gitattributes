@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+useful_code export-ignore
+res/temp export-ignore

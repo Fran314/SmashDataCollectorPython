@@ -46,22 +46,9 @@ for match_index in range(tot_matches):
             places.append(curr_place)
 
             #--- GET PLAYER CHARACTER ---#
-            curr_character_image = first_data[153 : 153 + 240, res.LEFT_EDGE[players-2][player_index] : res.RIGHT_EDGE[players-2][player_index]].copy()
-            curr_character_index = fun.getClosestCharacterByCloseup(curr_character_image, res.CHARACTER_CLOSEUPS[players-2], res.BACKGROUND_BGRS[player_index])
-            if(places[player_index] != 1):
-                curr_name_rect = fun.submat(first_data, res.NAME_PY[players-2], res.LEFT_EDGE[players-2][player_index] + res.NAME_LD, res.NAME_HEIGHT, res.NAME_WIDTH)
-            else:
-                curr_name_rect = fun.submat(first_data, res.NAME_PY[players-2] + res.WIN_OFFSET, res.LEFT_EDGE[players-2][player_index] + res.NAME_LD, res.NAME_HEIGHT, res.NAME_WIDTH)
-            curr_name_rect = fun.polarizeImage(curr_name_rect, res.POLARIZATION_THRESHOLD)
-            curr_name = fun.normalizeName(pytesseract.image_to_string(curr_name_rect))
-            character_name_ed = []
-            # for j in range(len(res.CHARACTER_NAMES)):
-            #     character_name_ed.append(fun.editDistance(curr_name, res.CHARACTER_NAMES[j][0]))
-            # min_index = numpy.argmin(character_name_ed)
-            # if(character_name_ed[min_index] >= len(res.CHARACTER_NAMES[min_index][0]) / 2):
-            #     error_message = f'G{player_index+1}\'s name is too uncertain'
-            #     raise fun.InvalidData
-            # characters.append(res.CHARACTER_NAMES[min_index][1])
+            curr_character_image = first_data[138 : 138 + 255, res.LEFT_EDGE[players-2][player_index] : res.RIGHT_EDGE[players-2][player_index]].copy()
+            curr_character_index = fun.getClosestCharacterByCloseup(curr_character_image, res.CHARACTER_CLOSEUPS[players-2], res.CHARACTER_CLOSEUPS_MASKS[players-2][curr_place == 1], res.BACKGROUND_BGRS[player_index])
+            character_indices.append(curr_character_index)
 
             #--- GET PLAYER TIME ---#
             curr_time = ""
