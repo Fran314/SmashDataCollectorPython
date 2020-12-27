@@ -3,35 +3,8 @@ import numpy
 import sys
 from cv2 import cv2
 from customizable import res_path
-
-def readTSV(path):
-    list_file = open(path, 'r')
-    file_content = list_file.read()
-    lines = []
-    curr_line = ""
-    for c in file_content:
-        if(c != '\n'):
-            curr_line += c
-        else:
-            lines.append(curr_line)
-            curr_line = ""
-    if(curr_line != ""):
-        lines.append(curr_line)
-    
-    to_return = []
-    for line in lines:
-        values = []
-        curr_val = ""
-        for c in line:
-            if(c != '\t'):
-                curr_val += c
-            else:
-                values.append(curr_val)
-                curr_val = ""
-        if(curr_val != ""):
-            values.append(curr_val)
-        to_return.append(values)
-    return to_return
+from functions import readTSV
+from functions import addBackground
 
 
 MAX_PLAYERS = 4 # Max number of players
@@ -66,9 +39,10 @@ for i in range(len(CHARACTER_INFOS)):
         skins_list.append(characters_tile[i * tile_height : (i+1) * tile_height, j * tile_width : (j+1) * tile_width].copy())
     CHARACTER_CLOSEUPS.append(skins_list)
     
-EMPTY_ICONS = []
-for i in range(MAX_PLAYERS):
-    EMPTY_ICONS.append(cv2.imread(os.path.join(res_path, "character_references", "empty_icons", "P" + str(i+1) + ".png"), flags=cv2.IMREAD_UNCHANGED))
+EMPTY_ICONS = [addBackground(numpy.zeros(CHARACTER_ICONS[0][0].shape[0], CHARACTER_ICONS[0][0].shape[1], 4), [32, 27, 172]),
+                addBackground(numpy.zeros(CHARACTER_ICONS[0][0].shape[0], CHARACTER_ICONS[0][0].shape[1], 4), [181, 90, 21]),
+                addBackground(numpy.zeros(CHARACTER_ICONS[0][0].shape[0], CHARACTER_ICONS[0][0].shape[1], 4), [0, 125, 166]),
+                addBackground(numpy.zeros(CHARACTER_ICONS[0][0].shape[0], CHARACTER_ICONS[0][0].shape[1], 4), [22, 131, 22])]
     
 
 ANCHOR_POINT_LD = [24, 24, 22]
