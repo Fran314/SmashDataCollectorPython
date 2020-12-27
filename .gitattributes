@@ -3,3 +3,5 @@
 
 useful_code export-ignore
 res/temp export-ignore
+data/* export-ignore
+output.tsv export-ignore
