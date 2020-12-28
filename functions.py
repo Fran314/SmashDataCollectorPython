@@ -76,19 +76,19 @@ def getClosestCharacterByCloseup(image, character_closeups, mask, background_bgr
         character_distances = []
         for j in range(8):
             curr_closeup = addBackground(character_closeups[i][j], background_bgr)
-            character_distances.append(numpy.sum(numpy.multiply(cv2.absdiff(curr_closeup, image),mask)))
+            character_distances.append(numpy.sum(numpy.multiply(cv2.absdiff(curr_closeup, image), mask)))
         distances.append(numpy.min(character_distances))
     return numpy.argmin(distances)
 
 
-def getClosestCharacterByIcon(image, icons, background_bgr):
+def getClosestPlayerByIcon(image, icons, background_bgr):
     empty_icon = numpy.full_like(image, background_bgr[0])
     empty_icon[:,:,1] = numpy.full((image.shape[0], image.shape[1]), background_bgr[1])
     empty_icon[:,:,2] = numpy.full((image.shape[0], image.shape[1]), background_bgr[2])
     distances = [numpy.sum(cv2.absdiff(empty_icon, image))]
     for i in range(len(icons)):
         character_distances = []
-        for j in range(icons[i]):
+        for j in range(len(icons[i])):
             curr_icon = addBackground(icons[i][j], background_bgr)
             character_distances.append(numpy.sum(cv2.absdiff(curr_icon, image)))
         distances.append(numpy.min(character_distances))
@@ -155,23 +155,6 @@ def folderizeName(arg):
         elif(c == '&'):
             to_return += "and"
     return to_return
-
-
-def isValidTime(arg):
-    if(arg == ""):
-        return True
-    if(len(arg) != 4):
-        return False
-    
-    if(arg[1] != ':'):
-        return False
-
-    if(ord(arg[0]) < 48 or ord(arg[0]) > 57
-        or ord(arg[2]) < 48 or ord(arg[2]) > 53
-        or ord(arg[3]) < 48 or ord(arg[3]) > 57):
-        return False
-
-    return True
 
 
 def isValidFirstData(positions, times):

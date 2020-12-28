@@ -10,7 +10,7 @@ from functions import addBackground
 MAX_PLAYERS = 4 # Max number of players
 
 
-CHARACTER_INFOS = readTSV(os.path.join(res_path, "characters_info.tsv"))
+CHARACTER_INFOS = readTSV(os.path.join(res_path, "character_references", "characters_info.tsv"))
 CHARACTER_CLOSEUPS = []
 characters_tile = cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "23-closeups.png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
 tile_height = int(characters_tile.shape[0] / len(CHARACTER_INFOS))
@@ -29,10 +29,10 @@ for i in range(len(CHARACTER_INFOS)):
 CHARACTER_CLOSEUPS.append(main_list)
 CHARACTER_CLOSEUPS.append(main_list)
 
-CHARACTER_CLOSEUPS_MASKS = [[cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "23-lose_mask.png")), cv2.COLOR_BGR2GRAY),
-                            cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "23-win_mask.png")), cv2.COLOR_BGR2GRAY)],
-                            [cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "23-lose_mask.png")), cv2.COLOR_BGR2GRAY),
-                            cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "23-win_mask.png")), cv2.COLOR_BGR2GRAY)]]
+CHARACTER_CLOSEUPS_MASKS = [[(cv2.imread(os.path.join(res_path, "character_references", "23-lose_mask.png")) / 255).astype(numpy.uint8),
+                            (cv2.imread(os.path.join(res_path, "character_references", "23-win_mask.png")) / 255).astype(numpy.uint8)],
+                            [(cv2.imread(os.path.join(res_path, "character_references", "23-lose_mask.png")) / 255).astype(numpy.uint8),
+                            (cv2.imread(os.path.join(res_path, "character_references", "23-win_mask.png")) / 255).astype(numpy.uint8)]]
 
 CHARACTER_ICONS = []
 characters_tile = cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "icons.png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
@@ -42,12 +42,7 @@ for i in range(len(CHARACTER_INFOS)):
     skins_list = []
     for j in range(8):
         skins_list.append(characters_tile[i * tile_height : (i+1) * tile_height, j * tile_width : (j+1) * tile_width].copy())
-    CHARACTER_CLOSEUPS.append(skins_list)
-    
-EMPTY_ICONS = [addBackground(numpy.zeros(CHARACTER_ICONS[0][0].shape[0], CHARACTER_ICONS[0][0].shape[1], 4), [32, 27, 172]),
-                addBackground(numpy.zeros(CHARACTER_ICONS[0][0].shape[0], CHARACTER_ICONS[0][0].shape[1], 4), [181, 90, 21]),
-                addBackground(numpy.zeros(CHARACTER_ICONS[0][0].shape[0], CHARACTER_ICONS[0][0].shape[1], 4), [0, 125, 166]),
-                addBackground(numpy.zeros(CHARACTER_ICONS[0][0].shape[0], CHARACTER_ICONS[0][0].shape[1], 4), [22, 131, 22])]
+    CHARACTER_ICONS.append(skins_list)
     
 
 ANCHOR_POINT_LD = [24, 24, 22]
@@ -59,6 +54,11 @@ for i in range(MAX_PLAYERS):
 BACKGROUND_CLOSEUPS_BGRS = [[0, 4, 188],
                         [213, 102, 7],
                         [9, 172, 232]]
+
+BACKGROUND_ICONS_BGRS = [[32, 27, 172],
+                        [181, 90, 21],
+                        [0, 125, 166],
+                        [22, 131, 22]]
 
 
 SMALL_DIGIT_WIDTH = 17
@@ -83,9 +83,9 @@ POLARIZATION_THRESHOLD = 40
 PLAYER_PIXEL = (657, 972)
 
 # PLAYERS_COLS[i] = The colour of the player pixel if there are [i+2] players
-PLAYER_COLOURS = [numpy.array([0, 61, 150, 255]), 
-                numpy.array([144, 114, 0, 255]), 
-                numpy.array([0, 115, 20, 255])]
+PLAYER_COLOURS = [numpy.array([150, 61, 0]), 
+                numpy.array([0, 114, 144]), 
+                numpy.array([20, 115, 0])]
 
 # LEFT_EDGE[i,j] = the y-position of the left edge of the rectangle containing the information
 #   of the [j]th player when there are [i+2] players in total
@@ -102,10 +102,10 @@ RIGHT_EDGE = [[579, 1105],
 PLACE_PIXEL_PY = 45
 PLACE_PIXEL_RD = [-68, -68, -43]
 
-PLACE_COLOURS = [numpy.array([255, 255, 0, 255]), 
-                numpy.array([204, 204, 204, 255]), 
-                numpy.array([241, 148, 17, 255]), 
-                numpy.array([185, 171, 207, 255])]
+PLACE_COLOURS = [numpy.array([0, 255, 255]), 
+                numpy.array([204, 204, 204]), 
+                numpy.array([17, 148, 241]), 
+                numpy.array([207, 171, 185])]
 
 NAME_WIDTH = 235
 NAME_HEIGHT = 77
