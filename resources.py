@@ -12,6 +12,7 @@ MAX_PLAYERS = 4 # Max number of players
 
 CHARACTER_INFOS = readTSV(os.path.join(res_path, "character_references", "characters_info.tsv"))
 CHARACTER_CLOSEUPS = []
+# 2 and 3 players closeups
 characters_tile = cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "23-closeups.png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
 tile_height = int(characters_tile.shape[0] / len(CHARACTER_INFOS))
 tile_width = int(characters_tile.shape[1] / 8)
@@ -28,11 +29,24 @@ for i in range(len(CHARACTER_INFOS)):
 #   having two copies of the same massive list of closeups, but two small references to the same list of closeups
 CHARACTER_CLOSEUPS.append(main_list)
 CHARACTER_CLOSEUPS.append(main_list)
+# 4 players closeups
+characters_tile = cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "4-closeups.png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
+tile_height = int(characters_tile.shape[0] / len(CHARACTER_INFOS))
+tile_width = int(characters_tile.shape[1] / 8)
+main_list = []
+for i in range(len(CHARACTER_INFOS)):
+    skins_list = []
+    for j in range(8):
+        skins_list.append(characters_tile[i * tile_height : (i+1) * tile_height, j * tile_width : (j+1) * tile_width].copy())
+    main_list.append(skins_list)
+CHARACTER_CLOSEUPS.append(main_list)
 
 CHARACTER_CLOSEUPS_MASKS = [[(cv2.imread(os.path.join(res_path, "character_references", "23-lose_mask.png")) / 255).astype(numpy.uint8),
                             (cv2.imread(os.path.join(res_path, "character_references", "23-win_mask.png")) / 255).astype(numpy.uint8)],
                             [(cv2.imread(os.path.join(res_path, "character_references", "23-lose_mask.png")) / 255).astype(numpy.uint8),
-                            (cv2.imread(os.path.join(res_path, "character_references", "23-win_mask.png")) / 255).astype(numpy.uint8)]]
+                            (cv2.imread(os.path.join(res_path, "character_references", "23-win_mask.png")) / 255).astype(numpy.uint8)],
+                            [(cv2.imread(os.path.join(res_path, "character_references", "4-lose_mask.png")) / 255).astype(numpy.uint8),
+                            (cv2.imread(os.path.join(res_path, "character_references", "4-win_mask.png")) / 255).astype(numpy.uint8)]]
 
 CHARACTER_ICONS = []
 characters_tile = cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "icons.png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
@@ -53,7 +67,8 @@ for i in range(MAX_PLAYERS):
 
 BACKGROUND_CLOSEUPS_BGRS = [[0, 4, 188],
                         [213, 102, 7],
-                        [9, 172, 232]]
+                        [9, 172, 232],
+                        [49, 153, 15]]
 
 BACKGROUND_ICONS_BGRS = [[32, 27, 172],
                         [181, 90, 21],

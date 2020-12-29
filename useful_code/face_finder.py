@@ -56,48 +56,98 @@ def overlayImages(foreground, background):
     return to_return.astype(numpy.float32)
 
 
-SAMPLE_G = [numpy.array([51, 51, 211]), numpy.array([237, 108, 39]), numpy.array([0, 170, 228])]
+MANUAL = False
 
-characters = fun.readTSV(r'C:\Users\franc\Desktop\characters_info.tsv')
+WIDTH_SAMPLES = 100
 
-faces_folder = r'C:\Users\franc\Desktop\smash\faces'
+SAMPLE_G = [numpy.array([51, 51, 211]), numpy.array([237, 108, 39]), numpy.array([0, 170, 228]), numpy.array([41, 153, 12])]
+characters = fun.readTSV(r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res\character_references\characters_info.tsv')
+
+faces_folder = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res\temp\4-faces'
 artworks_folder = r'C:\Users\franc\Desktop\smash\clean_artworks'
-output_artworks_folder = r'C:\Users\franc\Desktop\smash\coded_faces'
+output_artworks_folder = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res\temp\4-coded_faces'
 
-mask_image = [cv2.imread(r'C:\Users\franc\Desktop\lose_mask.png'), cv2.imread(r'C:\Users\franc\Desktop\lose_mask.png'), cv2.imread(r'C:\Users\franc\Desktop\win_mask.png')]
+mask_image = [cv2.imread(r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res\character_references\4-lose_mask.png'), 
+            cv2.imread(r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res\character_references\4-win_mask.png'),
+            cv2.imread(r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res\character_references\4-lose_mask.png'),
+            cv2.imread(r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res\character_references\4-lose_mask.png')]
 
-# AUTOMATIC
-'''
-total_time = time.time()
-for character_index in range(len(characters)):
-    character = characters[character_index][1]
-    if(os.path.isdir(os.path.join(faces_folder, character)) == False):
-        print(character + ", can't be found. Skipped")
-        continue
-    character_time = time.time()
-    images = os.listdir(os.path.join(faces_folder, character))
-    for face_image_file in images:
-        print(f'{character}/{face_image_file}', end='')
-        if(os.path.isfile(os.path.join(output_artworks_folder, character, face_image_file[0] + ".png"))):
-            print(", already done. Skipped")
+if(MANUAL):
+    # MANUAL
+    try:
+        character = "ridley"
+        artwork_reference = "1"
+        final_width = 1425
+        final_height = 1395
+        final_x = 210
+        final_y = 436
+
+        if(os.path.isdir(os.path.join(faces_folder, character)) == False):
+            print(character + ", can't be found. Skipped")
+            raise Exception
+        images = os.listdir(os.path.join(faces_folder, character))
+        for face_image_file in images:
+            if(face_image_file[0] != artwork_reference):
+                continue
+            print(f'{character}/{face_image_file}', end='')
+            face_image = cv2.imread(os.path.join(faces_folder, character, face_image_file))
+
+            for c in face_image_file[:-4]:
+                artwork_image = cv2.cvtColor(cv2.imread(os.path.join(artworks_folder, character, c + ".png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
+                artwork_image = deshadow(artwork_image)
+                x_offset = int((27 * artwork_image.shape[1]) / final_width)
+                y_offset = int((20 * artwork_image.shape[0]) / final_height)
+                artwork_image = overlayImages(artwork_image, shadowOf(artwork_image, x_offset, y_offset))
+                try:
+                    os.mkdir(os.path.join(output_artworks_folder, character))
+                except Exception:
+                    pass
+                cv2.imwrite(os.path.join(output_artworks_folder, character, c + ".png"), cv2.resize(artwork_image, (final_width, final_height))[final_y : final_y + face_image.shape[0], final_x : final_x + face_image.shape[1]])
+    except Exception:
+        pass
+
+else:
+    # AUTOMATIC
+    queue = []
+    for character_index in range(len(characters)):
+        character = characters[character_index][1]
+        if(os.path.isdir(os.path.join(faces_folder, character)) == False):
+            print(character + ", can't be found. Skipped")
             continue
-        face_image = cv2.imread(os.path.join(faces_folder, character, face_image_file))
-        artwork_image = cv2.cvtColor(cv2.imread(os.path.join(artworks_folder, character, face_image_file[0] + ".png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
-        player_sample_pixel = face_image[-3:-10]
+        images = os.listdir(os.path.join(faces_folder, character))
+        for face_image_file in images:
+            if(os.path.isfile(os.path.join(output_artworks_folder, character, face_image_file[0] + ".png"))):
+                print(character + '/' + face_image_file + ", already done. Skipped")
+            else:
+                queue.append([character, face_image_file])
+    print(queue)
+    '''
+    total_time = time.time()
+    for image_index in range(len(queue)):
+        image_time = time.time()
+        character = queue[image_index][0]
+        image_file = queue[image_index][1]
+        image = cv2.imread(os.path.join(faces_folder, character, image_file))
+        artwork_image = cv2.cvtColor(cv2.imread(os.path.join(artworks_folder, character, image_file[0] + ".png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
+        player_sample_pixel = image[-3:-10]
         player = numpy.argmin([norm(player_sample_pixel - reference_pixel) for reference_pixel in SAMPLE_G])
         artwork_image = fun.addBackground(artwork_image, res.BACKGROUND_CLOSEUPS_BGRS[player])
 
-        scale_range = numpy.linspace(0.707, 1.414, 100)
+        scale_range = numpy.linspace(0.707, 1.414, WIDTH_SAMPLES)
         width_range = (artwork_image.shape[1] * numpy.multiply(scale_range,scale_range)).astype(int)
         min_value = float("inf")
         approx_index = 0
+        last_feedback_length = 0
         for i in range(len(width_range)):
-            if(i % 10 == 0):
-                print(f'{i}-th width')
+            feedback = f'{character}/{image_file}, first scan: {i + 1} / {WIDTH_SAMPLES}'
+            print(' ' * last_feedback_length, end='\r')
+            print(feedback, end='\r')
+            last_feedback_length = len(feedback)
+
             width = width_range[i]
             height = int((width * artwork_image.shape[0]) / artwork_image.shape[1])
             scaled_artwork = cv2.resize(artwork_image, (width, height))
-            template_map = cv2.matchTemplate(scaled_artwork, face_image, cv2.TM_SQDIFF, None, mask_image[player])
+            template_map = cv2.matchTemplate(scaled_artwork, image, cv2.TM_SQDIFF, None, mask_image[player])
 
             curr_min = numpy.min(template_map)
             if(curr_min < min_value):
@@ -111,9 +161,14 @@ for character_index in range(len(characters)):
         final_x = 0
         final_y = 0
         for width in range(width_range[approx_index - 1], width_range[approx_index + 1]):
+            feedback = f'{character}/{image_file}, second scan:  {width - width_range[approx_index - 1] + 1} / {width_range[approx_index + 1] - width_range[approx_index - 1]}'
+            print(' ' * last_feedback_length, end='\r')
+            print(feedback, end='\r')
+            last_feedback_length = len(feedback)
+
             height = int((width * artwork_image.shape[0]) / artwork_image.shape[1])
             scaled_artwork = cv2.resize(artwork_image, (width, height))
-            template_map = cv2.matchTemplate(scaled_artwork, face_image, cv2.TM_SQDIFF, None, mask_image[player])
+            template_map = cv2.matchTemplate(scaled_artwork, image, cv2.TM_SQDIFF, None, mask_image[player])
 
             curr_min_index = numpy.argmin(template_map)
             curr_min_x = curr_min_index % template_map.shape[1]
@@ -125,7 +180,11 @@ for character_index in range(len(characters)):
                 final_y = curr_min_y
                 min_value = template_map[curr_min_y,curr_min_x]
 
-        for c in face_image_file[:-4]:
+        feedback = f'{character}/{image_file}, saving cropped images...'
+        print(' ' * last_feedback_length, end='\r')
+        print(feedback, end='\r')
+        last_feedback_length = len(feedback)
+        for c in image_file[:-4]:
             artwork_image = cv2.cvtColor(cv2.imread(os.path.join(artworks_folder, character, c + ".png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
             artwork_image = deshadow(artwork_image)
             x_offset = int((27 * artwork_image.shape[1]) / final_width)
@@ -135,39 +194,8 @@ for character_index in range(len(characters)):
                 os.mkdir(os.path.join(output_artworks_folder, character))
             except Exception:
                 pass
-            cv2.imwrite(os.path.join(output_artworks_folder, character, c + ".png"), cv2.resize(artwork_image, (final_width, final_height))[final_y : final_y + face_image.shape[0], final_x : final_x + face_image.shape[1]])
-        
-        print(f', elapsed time: {formatTime(time.time() - character_time)}, ETL: {formatTime(((time.time() - total_time) * (len(characters) - character_index-1)) / (character_index+1))}')
-print(f'\ntotal elapsed time: {formatTime(time.time() - total_time)}')
-'''
-
-# MANUAL
-try:
-    character = "steve"
-    if(os.path.isdir(os.path.join(faces_folder, character)) == False):
-        print(character + ", can't be found. Skipped")
-        raise Exception
-    images = os.listdir(os.path.join(faces_folder, character))
-    for face_image_file in images:
-        if(face_image_file[0] != '0'):
-            continue
-        print(f'{character}/{face_image_file}', end='')
-        face_image = cv2.imread(os.path.join(faces_folder, character, face_image_file))
-        final_width = 647
-        final_height = 807
-        final_x = 190
-        final_y = 36
-
-        for c in face_image_file[:-4]:
-            artwork_image = cv2.cvtColor(cv2.imread(os.path.join(artworks_folder, character, c + ".png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
-            artwork_image = deshadow(artwork_image)
-            x_offset = int((27 * artwork_image.shape[1]) / final_width)
-            y_offset = int((20 * artwork_image.shape[0]) / final_height)
-            artwork_image = overlayImages(artwork_image, shadowOf(artwork_image, x_offset, y_offset))
-            try:
-                os.mkdir(os.path.join(output_artworks_folder, character))
-            except Exception:
-                pass
-            cv2.imwrite(os.path.join(output_artworks_folder, character, c + ".png"), cv2.resize(artwork_image, (final_width, final_height))[final_y : final_y + face_image.shape[0], final_x : final_x + face_image.shape[1]])
-except Exception:
-    pass
+            cv2.imwrite(os.path.join(output_artworks_folder, character, c + ".png"), cv2.resize(artwork_image, (final_width, final_height))[final_y : final_y + image.shape[0], final_x : final_x + image.shape[1]])
+        print(' ' * last_feedback_length, end='\r')
+        print(f'{character}/{image_file}, done;  elapsed time: {formatTime(time.time() - image_time)}, ETL: {formatTime(((time.time() - total_time) * (len(queue) - image_index-1)) / (image_index+1))}')
+    print(f'\ntotal elapsed time: {formatTime(time.time() - total_time)}')
+    '''
