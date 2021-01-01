@@ -39,8 +39,17 @@ for match_index in range(tot_matches):
         times = []
         
         #--- GET NUMBER OF PLAYERS ---#
-        players_colour = first_data[res.PLAYER_PIXEL]
-        players_amount = numpy.argmin([numpy.linalg.norm(players_colour - colour) for colour in res.PLAYER_COLOURS])+2
+        # players_colour = first_data[res.PLAYER_PIXEL]
+        # players_amount = numpy.argmin([numpy.linalg.norm(players_colour - colour) for colour in res.PLAYER_COLOURS])+2
+        players_amount = 0
+        for i in range(3):
+            if(all([numpy.linalg.norm(first_data[pixel]) < 20 for pixel in res.PLAYER_PIXELS[i]])):
+                players_amount = i+2
+                break
+        if(players_amount == 0):
+            error_message = f'unable to tell how many players'
+            raise fun.InvalidData
+
 
         for curr_player_index in range(players_amount):
             #--- GET PLAYER TYPE ---#
@@ -197,7 +206,7 @@ for match_index in range(tot_matches):
         taken_given_dmg_difference = 0
         for curr_player_index in range(players_amount):
             taken_given_dmg_difference += taken_damages[curr_player_index] - given_damages[curr_player_index]
-        if(taken_given_dmg_difference < 0 or taken_given_dmg_difference >= custom.TAKEN_GIVEN_DMG_THRESHOLD):
+        if(taken_given_dmg_difference <= -custom.TAKEN_GIVEN_DMG_THRESHOLD or taken_given_dmg_difference >= custom.TAKEN_GIVEN_DMG_THRESHOLD):
             error_message = f'too big of a difference between total taken damage and total given damage ({taken_given_dmg_difference})'
             raise fun.InvalidData
 

@@ -207,10 +207,10 @@ def convertMatchToString(file_name, characters, positions, times, falls, given_d
     for i in range(players):
         match_string += characters[i] + "\t"
         match_string += str(positions[i]) + "\t"
+        match_string += time2string(times[i]) + "\t"
         match_string += ','.join(map(str, falls[i])) + "\t"
         match_string += str(given_damages[i]) + "\t"
-        match_string += str(taken_damages[i]) + "\t"
-        match_string += time2string(times[i])
+        match_string += str(taken_damages[i])
         if(i < players - 1):
             match_string += "\t"
     

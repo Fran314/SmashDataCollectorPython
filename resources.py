@@ -113,6 +113,10 @@ POLARIZATION_THRESHOLD = 40
 # "Player pixel" = the pixel sampled used to determine the number of players based on its colour
 PLAYER_PIXEL = (657, 972)
 
+PLAYER_PIXELS = [[(409, 179), (409, 705)],
+                [(409, 23), (409, 442), (409, 861)],
+                [(397, 4), (397, 324), (397, 644), (397, 964)]]
+
 # PLAYERS_COLS[i] = The colour of the player pixel if there are [i+2] players
 PLAYER_COLOURS = [numpy.array([150, 61, 0]), 
                 numpy.array([0, 114, 144]), 

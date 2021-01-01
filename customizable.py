@@ -1,6 +1,6 @@
-DATA_PATH = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\data'
+DATA_PATH = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\data\demo-4'
 RES_PATH = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res'
-OUTPUT_PATH = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\output.tsv'
+OUTPUT_PATH = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\output\output-4.tsv'
 
 # Set the language variable to 0, 1 or 2 according to the following:
 #   0 for Japanese or Korean
@@ -8,7 +8,7 @@ OUTPUT_PATH = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\output.tsv'
 #   2 for French, Spanish or German
 #   3 for Chinese (traditional or simplified)
 LANGUAGE = 1
-LIVES = 3
+LIVES = 1
 
 
 TAKEN_GIVEN_DMG_THRESHOLD = 30
