@@ -2,9 +2,8 @@ import os
 import numpy
 import sys
 from cv2 import cv2
-from customizable import res_path
-from functions import readTSV
-from functions import addBackground
+from customizable import res_path, LANGUAGE
+from functions import readTSV, addBackground
 
 
 MAX_PLAYERS = 4 # Max number of players
@@ -57,24 +56,41 @@ for i in range(len(CHARACTER_INFOS)):
     for j in range(8):
         skins_list.append(characters_tile[i * tile_height : (i+1) * tile_height, j * tile_width : (j+1) * tile_width].copy())
     CHARACTER_ICONS.append(skins_list)
-    
-
-ANCHOR_POINT_LD = [24, 24, 22]
-ANCHOR_POINT_STENCILS = []
-for i in range(MAX_PLAYERS):
-    ANCHOR_POINT_STENCILS.append(cv2.imread(os.path.join(res_path, "anchor_point", "P" + str(i+1) + ".png"), flags=cv2.IMREAD_UNCHANGED))
 
 
-BACKGROUND_CLOSEUPS_BGRS = [[0, 4, 188],
+BACKGROUND_CLOSEUPS_BGRS = [[140, 144, 144],
+                        [0, 4, 188],
                         [213, 102, 7],
                         [9, 172, 232],
                         [49, 153, 15]]
 
-BACKGROUND_ICONS_BGRS = [[32, 27, 172],
+BACKGROUND_ICONS_BGRS = [[114, 114, 114],
+                        [32, 27, 172],
                         [181, 90, 21],
                         [0, 125, 166],
                         [22, 131, 22]]
 
+DARK_BAND_BGRS = [[39, 39, 39],
+                    [12, 13, 64],
+                    [65, 34, 13],
+                    [0, 55, 70],
+                    [32, 70, 22]]
+
+ANCHOR_POINT_STENCILS = []
+for i in range(MAX_PLAYERS + 1):
+    stencil = numpy.zeros((66, 6, 3), dtype=numpy.uint8)
+    stencil[0 : 26, :] = numpy.array(DARK_BAND_BGRS[i], dtype=numpy.uint8)
+    stencil[26 : 66, :] = numpy.array(BACKGROUND_ICONS_BGRS[i], dtype=numpy.uint8)
+    ANCHOR_POINT_STENCILS.append(stencil)
+
+AP_STENCIL_WIDTH = ANCHOR_POINT_STENCILS[0].shape[1]
+AP_STENCIL_HEIGHT = ANCHOR_POINT_STENCILS[0].shape[0]
+AP_STENCILS_RD = -13 - AP_STENCIL_WIDTH
+AP_STENCILS_TOPY = [172, 172, 157]
+AP_STENCILS_BOTY = [443, 443, 434]
+AP_SPAN_RANGE = int(AP_STENCIL_HEIGHT * 3.0 / 4.0)
+
+DARK_BAND_SEP = 74
 
 SMALL_DIGIT_WIDTH = 17
 SMALL_DIGIT_HEIGHT = 21
@@ -88,7 +104,7 @@ BIG_DIGIT_WIDTH = 44
 BIG_DIGIT_HEIGHT = 63
 BIG_DIGIT_IMAGES = []
 digits_tile = cv2.cvtColor(cv2.imread(os.path.join(res_path, "digits", "big_digits.png")), cv2.COLOR_BGR2GRAY)
-for i in range(11):
+for i in range(12):
     BIG_DIGIT_IMAGES.append(digits_tile[:, i*BIG_DIGIT_WIDTH : (i+1)*BIG_DIGIT_WIDTH].copy())
 
 
@@ -122,11 +138,12 @@ PLACE_COLOURS = [numpy.array([0, 255, 255]),
                 numpy.array([17, 148, 241]), 
                 numpy.array([207, 171, 185])]
 
-NAME_WIDTH = 235
-NAME_HEIGHT = 77
-NAME_PY = [27, 27, 21]
-NAME_LD = 0
-WIN_OFFSET = 16
+PLAYER_TYPE_COLOURS = [numpy.array([146, 146, 146]),
+                        numpy.array([51, 51, 211]),
+                        numpy.array([237, 106, 39]),
+                        numpy.array([0, 170, 228]),
+                        numpy.array([41, 153, 12])]
+
 
 TIME_WIDTH = 191 + 40
 TIME_HEIGHT = 92 + 40
@@ -136,16 +153,35 @@ TIME_DEC_SEP = -48
 TIME_MIN_SEP = -75
 
 FALL_ICON_SIZE = [29, 29, 25]
-FALL_ICON_YO = -43
+FALL_ICON_YO = 32
 FALL_ICON_LD = [37, 37, 31]
 FALL_ICON_SEP = 33.3
 
-GVN_DMG_YO = 105
-TKN_DMG_YO = 175
-DMG_RD = -58
+GVN_DMG_YO = 180
+TKN_DMG_YO = 250
+SELFDESTR_YO = 110
 
-SELFDESTR_YO = 35
-SELFDESTR_RD = -21
+# Japanese and Korean
+if(LANGUAGE == 0):
+    DMG_RD = -67
+    SELFDESTR_RD = -67
+
+# English, Italian, Dutch and Russian
+elif(LANGUAGE == 1):
+    DMG_RD = -58
+    SELFDESTR_RD = -37
+
+# French, Spanish and German
+elif(LANGUAGE == 2):
+    DMG_RD = -67
+    SELFDESTR_RD = -37
+
+# Chinese (traditional and simplified)
+else:
+    DMG_RD = -66
+    SELFDESTR_RD = -66
+
+CHARACTER_CLOSEUP_HEIGHT = [255, 255, 245]
 
 
 #--- FREE STUFF ---#

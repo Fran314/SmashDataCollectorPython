@@ -80,7 +80,6 @@ def getClosestCharacterByCloseup(image, character_closeups, mask, background_bgr
         distances.append(numpy.min(character_distances))
     return numpy.argmin(distances)
 
-
 def getClosestPlayerByIcon(image, icons, background_bgr):
     empty_icon = numpy.full_like(image, background_bgr[0])
     empty_icon[:,:,1] = numpy.full((image.shape[0], image.shape[1]), background_bgr[1])
@@ -96,7 +95,7 @@ def getClosestPlayerByIcon(image, icons, background_bgr):
 
 def getClosestDigit(image, digit_images):
     distances = []
-    for i in range(11):
+    for i in range(len(digit_images)):
         distances.append(numpy.sum(cv2.absdiff(digit_images[i], image)))
     digit = numpy.argmin(distances)
     return digit-1
@@ -190,7 +189,10 @@ def isValidFirstData(positions, times):
 
 
 def time2int(arg):
-    return 60 * int(arg[0]) + int(arg[2:4])
+    if(len(arg) == 4):
+        return 60 * int(arg[0]) + int(arg[2:4])
+    else:
+        return 60 * int(arg[0:2]) + int(arg[3:5])
 def time2string(arg):
     if(arg == ""):
         return ""
@@ -198,7 +200,8 @@ def time2string(arg):
         return str(time2int(arg))
 
 
-def convertMatchToString(file_name, players, characters, positions, times, falls, given_damages, taken_damages):
+def convertMatchToString(file_name, characters, positions, times, falls, given_damages, taken_damages):
+    players = len(characters)
     match_string = file_name[6:8] + "/" + file_name[4:6] + "/" + file_name[0:4] + "\t"
     match_string += str(players) + "\t"
     for i in range(players):
