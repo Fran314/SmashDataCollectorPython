@@ -34,7 +34,7 @@ Taking the first screenshot is just pressing the screenshot button, it's as easy
 For the second screenshot you have to be a bit more precise, because the menu is a scrolling menu and not all the necessary stats are displayed before scrolling the menu. When you take the second screenshot you have to make sure that the scroll menu is not too high (which means the left side of the "Falls" row should be fully visible) and not too low (the right side of the "Taken damage" row should be fully visible). It is a bit annoying to have to check out for this, but the range of positions for the scroll menu for it to be a valid screenshot is very wide, so it's not as annoying as it sounds.  
 Here's examples of valid and invalid positions of the scroll menu:  
 ![top limit](readme_images/top_limit.png)
-![bottom limit](readme_images/bottm_limit.png)  
+![bottom limit](readme_images/bottom_limit.png)  
 After these two screenshot you can go for the next match. That's all it takes, and once you get used to it, it really just takes you away a couple of seconds per match!
 
 ### How to transfer the screenshots
