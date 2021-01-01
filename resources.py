@@ -2,17 +2,17 @@ import os
 import numpy
 import sys
 from cv2 import cv2
-from customizable import res_path, LANGUAGE
+from customizable import RES_PATH, LANGUAGE
 from functions import readTSV, addBackground
 
 
 MAX_PLAYERS = 4 # Max number of players
 
 
-CHARACTER_INFOS = readTSV(os.path.join(res_path, "character_references", "characters_info.tsv"))
+CHARACTER_INFOS = readTSV(os.path.join(RES_PATH, "character_references", "characters_info.tsv"))
 CHARACTER_CLOSEUPS = []
 # 2 and 3 players closeups
-characters_tile = cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "23-closeups.png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
+characters_tile = cv2.cvtColor(cv2.imread(os.path.join(RES_PATH, "character_references", "23-closeups.png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
 tile_height = int(characters_tile.shape[0] / len(CHARACTER_INFOS))
 tile_width = int(characters_tile.shape[1] / 8)
 main_list = []
@@ -29,7 +29,7 @@ for i in range(len(CHARACTER_INFOS)):
 CHARACTER_CLOSEUPS.append(main_list)
 CHARACTER_CLOSEUPS.append(main_list)
 # 4 players closeups
-characters_tile = cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "4-closeups.png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
+characters_tile = cv2.cvtColor(cv2.imread(os.path.join(RES_PATH, "character_references", "4-closeups.png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
 tile_height = int(characters_tile.shape[0] / len(CHARACTER_INFOS))
 tile_width = int(characters_tile.shape[1] / 8)
 main_list = []
@@ -40,15 +40,15 @@ for i in range(len(CHARACTER_INFOS)):
     main_list.append(skins_list)
 CHARACTER_CLOSEUPS.append(main_list)
 
-CHARACTER_CLOSEUPS_MASKS = [[(cv2.imread(os.path.join(res_path, "character_references", "23-lose_mask.png")) / 255).astype(numpy.uint8),
-                            (cv2.imread(os.path.join(res_path, "character_references", "23-win_mask.png")) / 255).astype(numpy.uint8)],
-                            [(cv2.imread(os.path.join(res_path, "character_references", "23-lose_mask.png")) / 255).astype(numpy.uint8),
-                            (cv2.imread(os.path.join(res_path, "character_references", "23-win_mask.png")) / 255).astype(numpy.uint8)],
-                            [(cv2.imread(os.path.join(res_path, "character_references", "4-lose_mask.png")) / 255).astype(numpy.uint8),
-                            (cv2.imread(os.path.join(res_path, "character_references", "4-win_mask.png")) / 255).astype(numpy.uint8)]]
+CHARACTER_CLOSEUPS_MASKS = [[(cv2.imread(os.path.join(RES_PATH, "character_references", "23-lose_mask.png")) / 255).astype(numpy.uint8),
+                            (cv2.imread(os.path.join(RES_PATH, "character_references", "23-win_mask.png")) / 255).astype(numpy.uint8)],
+                            [(cv2.imread(os.path.join(RES_PATH, "character_references", "23-lose_mask.png")) / 255).astype(numpy.uint8),
+                            (cv2.imread(os.path.join(RES_PATH, "character_references", "23-win_mask.png")) / 255).astype(numpy.uint8)],
+                            [(cv2.imread(os.path.join(RES_PATH, "character_references", "4-lose_mask.png")) / 255).astype(numpy.uint8),
+                            (cv2.imread(os.path.join(RES_PATH, "character_references", "4-win_mask.png")) / 255).astype(numpy.uint8)]]
 
 CHARACTER_ICONS = []
-characters_tile = cv2.cvtColor(cv2.imread(os.path.join(res_path, "character_references", "icons.png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
+characters_tile = cv2.cvtColor(cv2.imread(os.path.join(RES_PATH, "character_references", "icons.png"), flags=cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2BGRA)
 tile_height = int(characters_tile.shape[0] / len(CHARACTER_INFOS))
 tile_width = int(characters_tile.shape[1] / 8)
 for i in range(len(CHARACTER_INFOS)):
@@ -96,14 +96,14 @@ SMALL_DIGIT_WIDTH = 17
 SMALL_DIGIT_HEIGHT = 21
 SMALL_DIGIT_SEP = 19.5
 SMALL_DIGIT_IMAGES = []
-digits_tile = cv2.cvtColor(cv2.imread(os.path.join(res_path, "digits", "small_digits.png")), cv2.COLOR_BGR2GRAY)
+digits_tile = cv2.cvtColor(cv2.imread(os.path.join(RES_PATH, "digits", "small_digits.png")), cv2.COLOR_BGR2GRAY)
 for i in range(11):
     SMALL_DIGIT_IMAGES.append(digits_tile[:, i*SMALL_DIGIT_WIDTH : (i+1)*SMALL_DIGIT_WIDTH].copy())
 
 BIG_DIGIT_WIDTH = 44
 BIG_DIGIT_HEIGHT = 63
 BIG_DIGIT_IMAGES = []
-digits_tile = cv2.cvtColor(cv2.imread(os.path.join(res_path, "digits", "big_digits.png")), cv2.COLOR_BGR2GRAY)
+digits_tile = cv2.cvtColor(cv2.imread(os.path.join(RES_PATH, "digits", "big_digits.png")), cv2.COLOR_BGR2GRAY)
 for i in range(12):
     BIG_DIGIT_IMAGES.append(digits_tile[:, i*BIG_DIGIT_WIDTH : (i+1)*BIG_DIGIT_WIDTH].copy())
 

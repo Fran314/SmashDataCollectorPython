@@ -28,11 +28,13 @@ If you too are an occasional Smash player and a stats nerd, this is for you!
 First, download the script. You CAN download the whole repository, but I'd suggest to download the latest release (whcih you can find [here](https://github.com/Fran314/SmashDataCollector/releases)), as it has only the stuff that you need to run the script and not the bunch of stuff that I needed and need to make the character faces database.
 ### What to do when you're Smashing
 In order to save a match for collecting the data later, you'll have to take two screenshots (using the screenshot button on the Switch, and not any other screenshot function that your monitor/television might have) for every match you play. In particular, you'll have to take a screenshot of the result screen where the "Out at" time is displayed (and we'll call it first screenshot), and a screenshot of the result screen where the kills, falls, damage taken and damage given are displayed. An example of what the first and second screenshot should look like is this:  
-![first screenshot](data/2020121110511900_c.jpg)
-![second screenshot](data/2020121110513400_c.jpg)  
+![first screenshot](readme_images/2021010119113300_c.jpg)
+![second screenshot](readme_images/2021010119115300_c.jpg)  
 Taking the first screenshot is just pressing the screenshot button, it's as easy as it gets.  
-For the second screenshot you have to be a bit more precise, because the menu is a scrolling menu and not all the necessary stats are displayed before scrolling the menu. When you take the second screenshot you have to make sure that the scroll menu is not too high (which means the right side of the "Falls" row should be fully visible) and not too low (the right side of the "Taken damage" row should be fully visible). It is a bit annoying to have to check out for this, but the range of positions for the scroll menu for it to be a valid screenshot is very wide, so it's not as annoying as it sounds.  
+For the second screenshot you have to be a bit more precise, because the menu is a scrolling menu and not all the necessary stats are displayed before scrolling the menu. When you take the second screenshot you have to make sure that the scroll menu is not too high (which means the left side of the "Falls" row should be fully visible) and not too low (the right side of the "Taken damage" row should be fully visible). It is a bit annoying to have to check out for this, but the range of positions for the scroll menu for it to be a valid screenshot is very wide, so it's not as annoying as it sounds.  
 Here's examples of valid and invalid positions of the scroll menu:  
+![top limit](readme_images/top_limit.png)
+![bottom limit](readme_images/bottm_limit.png)  
 After these two screenshot you can go for the next match. That's all it takes, and once you get used to it, it really just takes you away a couple of seconds per match!
 
 ### How to transfer the screenshots

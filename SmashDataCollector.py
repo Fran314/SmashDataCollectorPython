@@ -16,7 +16,7 @@ if(custom.LIVES > 8):
     sys.exit(0)
 
 #--- FIND MATCHES ---#
-dirs = fun.mergeSort(os.listdir(custom.data_path))
+dirs = fun.mergeSort(os.listdir(custom.DATA_PATH))
 if(len(dirs) % 2 != 0):
     print("Odd number of images present in data. Ignoring the last image.")
     dirs = dirs[:-1]
@@ -28,8 +28,8 @@ output_strings = []
 problematic_matches = []
 for match_index in range(tot_matches):
     print(f'Match #{match_index+1} out of {tot_matches}')
-    first_data = cv2.imread(os.path.join(custom.data_path, dirs[2*match_index]))
-    second_data = cv2.imread(os.path.join(custom.data_path, dirs[2*match_index+1]))
+    first_data = cv2.imread(os.path.join(custom.DATA_PATH, dirs[2*match_index]))
+    second_data = cv2.imread(os.path.join(custom.DATA_PATH, dirs[2*match_index+1]))
 
     try:
         #--- FIRST IMAGE ---#
@@ -216,7 +216,7 @@ if(len(problematic_matches) > 0):
     print(f'elapsed time: {(time.time() - t):.3f} s')
 
     #--- WRITE TEMPORARY OUTPUT ---#
-    output_file = open(custom.output_path, 'w')
+    output_file = open(custom.OUTPUT_PATH, 'w')
     for match in output_strings[:-1]:
         output_file.write(match)
         output_file.write("\n")
@@ -231,8 +231,8 @@ if(len(problematic_matches) > 0):
             print(f'Problematic match #{match_counter+1} of {len(problematic_matches)} (match #{problematic_match[0]+1})')
             print(f'Problem: {problematic_match[1]}')
 
-            first_data = cv2.imread(os.path.join(custom.data_path, dirs[2*problematic_match[0]]))
-            second_data = cv2.imread(os.path.join(custom.data_path, dirs[2*problematic_match[0]+1]))
+            first_data = cv2.imread(os.path.join(custom.DATA_PATH, dirs[2*problematic_match[0]]))
+            second_data = cv2.imread(os.path.join(custom.DATA_PATH, dirs[2*problematic_match[0]+1]))
             valid_data = False
             while(valid_data == False):
                 valid_data = True
@@ -340,7 +340,7 @@ if(len(problematic_matches) > 0):
         pass
 
 #--- WRITE OUTPUT ---#
-output_file = open(custom.output_path, 'w')
+output_file = open(custom.OUTPUT_PATH, 'w')
 for match in output_strings[:-1]:
     output_file.write(match)
     output_file.write("\n")
