@@ -19,8 +19,8 @@ This started as a small project made to save some time to me and my roommate and
 If you too are an occasional Smash player and a stats nerd, this is for you!
 
 ## Features
-- For every match and for every player of the match, the script automatically collects the following stats: Position, time survived, falls (as in who killed you, including selfdestructions), given damage and taken damage. It does not collect the kills of a player because from the falls you can reconstruct the kills.
-- **The script supports ALL the available languages** in Super Smash Bros. Ultimate as up to v10.1.0 (which are Japanese, English, French, Spanish, German, Italian, Dutch, Russian, Chinese (traditional), Chinese (simplified) and Korean).
+- For every match and for every player of the match, the script automatically collects the following stats: position, time survived, falls (as in who killed you, including selfdestructions), given damage and taken damage. It does not collect the kills of a player because from the falls you can reconstruct the kills.
+- **The script supports ALL the available languages** in Super Smash Bros. Ultimate as up to v10.1.0 (which are Japanese, English, French, Spanish, German, Italian, Dutch, Russian, Chinese (traditional), Chinese (simplified) and Korean), with automatic language recognition.
 - **The script supports matches with 2, 3 and 4 players.**
 - **The script supports matches with both actual players and CPU.**
 
