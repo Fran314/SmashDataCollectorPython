@@ -10,6 +10,9 @@ import customizable as custom
 #--- INITIALIZATION ---#
 t = time.time()
 
+regex = f'({")|(".join([name[0].upper() for name in res.CHARACTER_INFOS])})'
+print(regex)
+
 if(custom.LIVES > 8):
     print("The number of lives can't be greater than 8.")
     input("Press Enter to continue...")
@@ -39,8 +42,6 @@ for match_index in range(tot_matches):
         times = []
         
         #--- GET NUMBER OF PLAYERS ---#
-        # players_colour = first_data[res.PLAYER_PIXEL]
-        # players_amount = numpy.argmin([numpy.linalg.norm(players_colour - colour) for colour in res.PLAYER_COLOURS])+2
         players_amount = 0
         for i in range(3):
             if(all([numpy.linalg.norm(first_data[pixel]) < 20 for pixel in res.PLAYER_PIXELS[i]])):
@@ -49,11 +50,14 @@ for match_index in range(tot_matches):
         if(players_amount == 0):
             error_message = f'unable to tell how many players'
             raise fun.InvalidData
+        
+        language_image = fun.submat(first_data, res.LANGUAGE_YO[players_amount-2], res.LEFT_EDGE[players_amount-2][0] + res.LANGUAGE_LD, res.LANGUAGE_HEIGHT, res.LANGUAGE_WIDTH[players_amount-2])
+        language = fun.getClosestLanguageType(language_image, res.LANGUAGES[players_amount-2])
 
 
         for curr_player_index in range(players_amount):
             #--- GET PLAYER TYPE ---#
-            type_colour = first_data[res.TIME_PY, res.RIGHT_EDGE[players_amount-2][curr_player_index] + int(res.TIME_SEC_RD[players_amount-2] / 2)]
+            type_colour = first_data[res.TIME_PY[players_amount-2], res.RIGHT_EDGE[players_amount-2][curr_player_index] + int(res.TIME_SEC_RD[players_amount-2] / 2)]
             curr_player_type = numpy.argmin([numpy.linalg.norm(type_colour - colour) for colour in res.PLAYER_TYPE_COLOURS])
             types.append(curr_player_type)
 
@@ -127,8 +131,8 @@ for match_index in range(tot_matches):
                 lower_span = min(ap_matches.shape[0] - j - 1, res.AP_SPAN_RANGE)
                 region = ap_matches[j - upper_span : j + lower_span]
                 if(numpy.argmax(region) == upper_span):
-                    if(numpy.sum(fun.polarizeImage(fun.submat(second_data, res.AP_STENCILS_TOPY[players_amount - 2] + j, res.RIGHT_EDGE[players_amount-2][curr_player_index] + res.SELFDESTR_RD, res.AP_STENCIL_HEIGHT, res.SMALL_DIGIT_WIDTH), 170)) == 0 and
-                        numpy.sum(fun.polarizeImage(fun.submat(second_data, res.AP_STENCILS_TOPY[players_amount - 2] + j + res.DARK_BAND_SEP, res.RIGHT_EDGE[players_amount-2][curr_player_index] + res.SELFDESTR_RD, res.AP_STENCIL_HEIGHT, res.SMALL_DIGIT_WIDTH), 170)) > 0):
+                    if(numpy.sum(fun.polarizeImage(fun.submat(second_data, res.AP_STENCILS_TOPY[players_amount - 2] + j, res.RIGHT_EDGE[players_amount-2][curr_player_index] + res.SELFDESTR_RD[language], res.AP_STENCIL_HEIGHT, res.SMALL_DIGIT_WIDTH), 170)) == 0 and
+                        numpy.sum(fun.polarizeImage(fun.submat(second_data, res.AP_STENCILS_TOPY[players_amount - 2] + j + res.DARK_BAND_SEP, res.RIGHT_EDGE[players_amount-2][curr_player_index] + res.SELFDESTR_RD[language], res.AP_STENCIL_HEIGHT, res.SMALL_DIGIT_WIDTH), 170)) > 0):
                         anchor_point = res.AP_STENCILS_TOPY[players_amount - 2] + j
             if(anchor_point == 0):
                 error_message = f'couldn\'t find anchor point for P{curr_player_index+1}'
@@ -137,7 +141,7 @@ for match_index in range(tot_matches):
             #--- GET PLAYER FALLS ---#
             curr_fall_list = []
             fall_icon_px = res.LEFT_EDGE[players_amount-2][curr_player_index] + res.FALL_ICON_LD[players_amount-2]
-            fall_icon_py = anchor_point + res.FALL_ICON_YO
+            fall_icon_py = anchor_point + res.FALL_ICON_YO[players_amount-2]
             for j in range(custom.LIVES):
                 fall_image = fun.submat(second_data, fall_icon_py, int(fall_icon_px), res.FALL_ICON_SIZE[players_amount-2], res.FALL_ICON_SIZE[players_amount-2])
                 fall_image = cv2.resize(fall_image, (50,50))
@@ -152,7 +156,7 @@ for match_index in range(tot_matches):
 
             #--- GET PLAYER SELFDESTRUCTS ---#
             digit_y = anchor_point + res.SELFDESTR_YO
-            digit_x = res.RIGHT_EDGE[players_amount-2][curr_player_index] + res.SELFDESTR_RD
+            digit_x = res.RIGHT_EDGE[players_amount-2][curr_player_index] + res.SELFDESTR_RD[language]
             digit_image = fun.submat(second_data, digit_y, digit_x, res.SMALL_DIGIT_HEIGHT, res.SMALL_DIGIT_WIDTH)
             digit_image = fun.polarizeImage(digit_image, res.POLARIZATION_THRESHOLD)
             curr_selfdestruct = fun.getClosestDigit(digit_image, res.SMALL_DIGIT_IMAGES)
@@ -173,7 +177,7 @@ for match_index in range(tot_matches):
             #--- GET PLAYER GIVEN DAMAGE ---#
             given_damage = 0
             digit_y = anchor_point + res.GVN_DMG_YO
-            digit_x = res.RIGHT_EDGE[players_amount-2][curr_player_index] + res.DMG_RD
+            digit_x = res.RIGHT_EDGE[players_amount-2][curr_player_index] + res.DMG_RD[language]
             digit = 0
             decimal_place = 1
             while(digit != -1):
@@ -189,7 +193,7 @@ for match_index in range(tot_matches):
             #--- GET PLAYER TAKEN DAMAGE ---#
             taken_damage = 0
             digit_y = anchor_point + res.TKN_DMG_YO
-            digit_x = res.RIGHT_EDGE[players_amount-2][curr_player_index] + res.DMG_RD
+            digit_x = res.RIGHT_EDGE[players_amount-2][curr_player_index] + res.DMG_RD[language]
             digit = 0
             decimal_place = 1
             while(digit != -1):
@@ -206,7 +210,7 @@ for match_index in range(tot_matches):
         taken_given_dmg_difference = 0
         for curr_player_index in range(players_amount):
             taken_given_dmg_difference += taken_damages[curr_player_index] - given_damages[curr_player_index]
-        if(taken_given_dmg_difference <= -custom.TAKEN_GIVEN_DMG_THRESHOLD or taken_given_dmg_difference >= custom.TAKEN_GIVEN_DMG_THRESHOLD):
+        if(taken_given_dmg_difference < 0 or taken_given_dmg_difference >= custom.TAKEN_GIVEN_DMG_THRESHOLD):
             error_message = f'too big of a difference between total taken damage and total given damage ({taken_given_dmg_difference})'
             raise fun.InvalidData
 
@@ -258,8 +262,8 @@ if(len(problematic_matches) > 0):
                     players_amount = int(fun.readInput(f'Enter number of players: ', regex))
                     for curr_player_index in range(players_amount):
                         #--- GET PLAYER CHARACTER ---#
-                        regex = f'({")|(".join([name[0] for name in res.CHARACTER_INFOS])})'
-                        player_character = fun.readInput(f'Enter P{curr_player_index+1} character: ', regex)
+                        regex = f'({")|(".join([name[0].upper() for name in res.CHARACTER_INFOS])})'
+                        player_character = fun.readInput(f'Enter P{curr_player_index+1} character (in English): ', regex)
                         for name in res.CHARACTER_INFOS:
                             if(name[0] == player_character.upper()):
                                 player_character = name[1]

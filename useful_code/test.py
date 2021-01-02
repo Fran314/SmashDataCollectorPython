@@ -14,7 +14,23 @@ import functions as fun
 #                         [0, 125, 166],
 #                         [22, 131, 22]]
 
-print(numpy.linalg.norm([0, 4, 0]))
+LEFT_EDGE = [[175, 701],
+            [19, 438, 857],
+            [0, 320, 640, 960]]
+LANGUAGE_LD = 10
+LANGUAGE_YO = [425, 425, 418]
+LANGUAGE_WIDTH = [120, 120, 105]
+LANGUAGE_HEIGHT = 45
+
+source_path = r'C:\Users\franc\Desktop\newdemo\4-first'
+output_path = r'C:\Users\franc\Desktop\newdemo\4-languages'
+screenshots = os.listdir(source_path)
+
+players_amount = 4
+for screenshot_file in screenshots:
+    screenshot_image = cv2.imread(os.path.join(source_path, screenshot_file))
+    language_image = fun.submat(screenshot_image, LANGUAGE_YO[players_amount-2], LEFT_EDGE[players_amount-2][0] + LANGUAGE_LD, LANGUAGE_HEIGHT, LANGUAGE_WIDTH[players_amount-2])
+    cv2.imwrite(os.path.join(output_path, screenshot_file[:-4] + ".png"), language_image)
 
 # RIGHT_EDGE = [423, 842, 1261]
 # LEFT_EDGE = [19, 438, 857]

@@ -100,6 +100,13 @@ def getClosestDigit(image, digit_images):
     digit = numpy.argmin(distances)
     return digit-1
 
+def getClosestLanguageType(image, languages):
+    distances = []
+    for i in range(len(languages)):
+        distances.append(numpy.sum(cv2.absdiff(languages[i][0], image)))
+    index = numpy.argmin(distances)
+    return languages[index][1]
+
 
 def addBackground(image_bgra, colour_bgr):
     to_return = numpy.zeros((image_bgra.shape[0], image_bgra.shape[1], 3))

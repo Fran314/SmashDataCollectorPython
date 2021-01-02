@@ -2,7 +2,7 @@ import os
 import numpy
 import sys
 from cv2 import cv2
-from customizable import RES_PATH, LANGUAGE
+from customizable import RES_PATH
 from functions import readTSV, addBackground
 
 
@@ -110,17 +110,10 @@ for i in range(12):
 
 POLARIZATION_THRESHOLD = 40
 
-# "Player pixel" = the pixel sampled used to determine the number of players based on its colour
-PLAYER_PIXEL = (657, 972)
-
+# "Player pixels" = the pixels sampled used to determine the number of players
 PLAYER_PIXELS = [[(409, 179), (409, 705)],
                 [(409, 23), (409, 442), (409, 861)],
                 [(397, 4), (397, 324), (397, 644), (397, 964)]]
-
-# PLAYERS_COLS[i] = The colour of the player pixel if there are [i+2] players
-PLAYER_COLOURS = [numpy.array([150, 61, 0]), 
-                numpy.array([0, 114, 144]), 
-                numpy.array([20, 115, 0])]
 
 # LEFT_EDGE[i,j] = the y-position of the left edge of the rectangle containing the information
 #   of the [j]th player when there are [i+2] players in total
@@ -157,7 +150,7 @@ TIME_DEC_SEP = -48
 TIME_MIN_SEP = -75
 
 FALL_ICON_SIZE = [29, 29, 25]
-FALL_ICON_YO = 32
+FALL_ICON_YO = [32, 32, 33]
 FALL_ICON_LD = [37, 37, 31]
 FALL_ICON_SEP = 33.3
 
@@ -165,27 +158,55 @@ GVN_DMG_YO = 180
 TKN_DMG_YO = 250
 SELFDESTR_YO = 110
 
-# Japanese and Korean
-if(LANGUAGE == 0):
-    DMG_RD = -67
-    SELFDESTR_RD = -67
-
-# English, Italian, Dutch and Russian
-elif(LANGUAGE == 1):
-    DMG_RD = -58
-    SELFDESTR_RD = -37
-
-# French, Spanish and German
-elif(LANGUAGE == 2):
-    DMG_RD = -67
-    SELFDESTR_RD = -37
-
-# Chinese (traditional and simplified)
-else:
-    DMG_RD = -66
-    SELFDESTR_RD = -66
+# LANGUAGE DEPENDENT
+DMG_RD = [-67, -58, -67, -67]
+SELFDESTR_RD = [-67, -37, -37, -67]
 
 CHARACTER_CLOSEUP_HEIGHT = [255, 255, 245]
+
+
+LANGUAGE_LD = 10
+LANGUAGE_YO = [425, 425, 418]
+LANGUAGE_WIDTH = [120, 120, 105]
+LANGUAGE_HEIGHT = 45
+
+languages_tile23 = cv2.imread(os.path.join(RES_PATH, "languages", "23-languages.png"))
+languages_tile4 = cv2.imread(os.path.join(RES_PATH, "languages", "4-languages.png"))
+LANGUAGES = [[[languages_tile23[0 : 45, : ], 0],    # Japanese
+            [languages_tile23[45 : 90, : ], 1],     # English
+            [languages_tile23[90 : 135, : ], 2],    # French
+            [languages_tile23[135 : 180, : ], 2],   # Spanish
+            [languages_tile23[180 : 225, : ], 2],   # German
+            [languages_tile23[225 : 270, : ], 1],   # Italian
+            [languages_tile23[270 : 315, : ], 1],   # Dutch
+            [languages_tile23[315 : 360, : ], 1],   # Russian
+            [languages_tile23[360 : 405, : ], 3],   # Chinese (traditional)
+            [languages_tile23[405 : 450, : ], 3],   # Chinese (simplified)
+            [languages_tile23[450 : 495, : ], 0]],  # Korean
+
+            [[languages_tile23[0 : 45, : ], 0],     # Japanese
+            [languages_tile23[45 : 90, : ], 1],     # English
+            [languages_tile23[90 : 135, : ], 2],    # French
+            [languages_tile23[135 : 180, : ], 2],   # Spanish
+            [languages_tile23[180 : 225, : ], 2],   # German
+            [languages_tile23[225 : 270, : ], 1],   # Italian
+            [languages_tile23[270 : 315, : ], 1],   # Dutch
+            [languages_tile23[315 : 360, : ], 1],   # Russian
+            [languages_tile23[360 : 405, : ], 3],   # Chinese (traditional)
+            [languages_tile23[405 : 450, : ], 3],   # Chinese (simplified)
+            [languages_tile23[450 : 495, : ], 0]],  # Korean
+            
+            [[languages_tile4[0 : 45, : ], 0],      # Japanese
+            [languages_tile4[45 : 90, : ], 1],      # English
+            [languages_tile4[90 : 135, : ], 2],     # French
+            [languages_tile4[135 : 180, : ], 2],    # Spanish
+            [languages_tile4[180 : 225, : ], 2],    # German
+            [languages_tile4[225 : 270, : ], 1],    # Italian
+            [languages_tile4[270 : 315, : ], 1],    # Dutch
+            [languages_tile4[315 : 360, : ], 1],    # Russian
+            [languages_tile4[360 : 405, : ], 3],    # Chinese (traditional)
+            [languages_tile4[405 : 450, : ], 3],    # Chinese (simplified)
+            [languages_tile4[450 : 495, : ], 0]]]   # Korean
 
 
 #--- FREE STUFF ---#
