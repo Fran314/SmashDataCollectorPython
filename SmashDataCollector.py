@@ -10,9 +10,6 @@ import customizable as custom
 #--- INITIALIZATION ---#
 t = time.time()
 
-regex = f'({")|(".join([name[0].upper() for name in res.CHARACTER_INFOS])})'
-print(regex)
-
 if(custom.LIVES > 8):
     print("The number of lives can't be greater than 8.")
     input("Press Enter to continue...")
