@@ -61,6 +61,9 @@ If everything went according to plans, you should now have your desired output! 
 
 - **The time for a match must not exceed 59:59.** Though if you actually succeed in a 1h match, congrats.
 
+## Credits
+Thanks to u/Lukaskywalkr on reddit for providing most of the screenshots for the DLC characters
+
 ## Adding characters not currently supported
 The script currently doesn't support any of the DLC characters. This is because I personally don't own the DLCs and I don't have those characters. To be able to support those characters I need to have the cutout of their face from their artwork in the database. What I'm missing is the reference in order to know the position and scaling of the cutout. If you have any of the characters missing and you want to be able to recognize it with the script, I'll need you to send me some screenshots. In particular, you have to send me a "first screenshot" (see second paragraph of the "How to use it" section to understand what I mean with "first screenshot") of two matches: one where there are 3 players, and one where there are 4 players. If possible, the character to add should NOT be in first place. Just send me the screenshots and I'll do the rest!
 
