@@ -63,9 +63,9 @@ WIDTH_SAMPLES = 100
 SAMPLE_G = [numpy.array([51, 51, 211]), numpy.array([237, 108, 39]), numpy.array([0, 170, 228]), numpy.array([41, 153, 12])]
 characters = fun.readTSV(r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res\character_references\characters_info.tsv')
 
-faces_folder = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res\temp\4-faces'
+faces_folder = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res\temp\23-faces'
 artworks_folder = r'C:\Users\franc\Desktop\smash\clean_artworks'
-output_artworks_folder = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res\temp\4-coded_faces'
+output_artworks_folder = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res\temp\23-coded_faces'
 
 mask_image = [cv2.imread(r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res\character_references\4-lose_mask.png'), 
             cv2.imread(r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res\character_references\4-win_mask.png'),
@@ -75,12 +75,12 @@ mask_image = [cv2.imread(r'C:\Users\franc\Documents\VSCode\SmashDataCollector\re
 if(MANUAL):
     # MANUAL
     try:
-        character = "ridley"
-        artwork_reference = "1"
-        final_width = 1425
-        final_height = 1395
-        final_x = 210
-        final_y = 436
+        character = "steve"
+        artwork_reference = "0"
+        final_width = 545
+        final_height = 681
+        final_x = 179
+        final_y = 42
 
         if(os.path.isdir(os.path.join(faces_folder, character)) == False):
             print(character + ", can't be found. Skipped")
@@ -121,7 +121,6 @@ else:
             else:
                 queue.append([character, face_image_file])
     print(queue)
-    '''
     total_time = time.time()
     for image_index in range(len(queue)):
         image_time = time.time()
@@ -198,4 +197,3 @@ else:
         print(' ' * last_feedback_length, end='\r')
         print(f'{character}/{image_file}, done;  elapsed time: {formatTime(time.time() - image_time)}, ETL: {formatTime(((time.time() - total_time) * (len(queue) - image_index-1)) / (image_index+1))}')
     print(f'\ntotal elapsed time: {formatTime(time.time() - total_time)}')
-    '''

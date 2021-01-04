@@ -1,14 +1,6 @@
 ### Warnings
 I've tested the script only on Windows. It should also run on Linux. No idea if it runs on Mac.  
-The script currently doesn't support the following characters:
-- Piranha Plant
-- Joker
-- Hero
-- Banjo & Kazooie
-- Terry
-- Byleth
-- Min min
-- Steve
+The script currently doesn't support the following character(s):
 - Sephiroth
 
 It COULD support those characters, but I need some screenshots in order to add a face reference for the character recognition. If you're interested in using this program with those characters, you can send me those screenshots and I'll do the rest! More info below.

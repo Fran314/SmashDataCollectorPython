@@ -13,10 +13,27 @@ import resources as res
 t = time.time()
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
-source_path = r'C:\Users\franc\Desktop\smash\reference_characters'
-output_path = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res\temp\4-faces'
+source_path = r'C:\Users\franc\Desktop\Smash Character Stuffs\23'
+output_path = r'C:\Users\franc\Desktop\Smash Character Stuffs\23-faces'
 
 CHARACTER_NAMES = fun.readTSV(r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res\character_references\characters_info.tsv')
+
+players = 3
+for character_info in CHARACTER_NAMES:
+    character = character_info[1]
+    if(os.path.isdir(os.path.join(source_path, character)) == False):
+        continue
+
+    matches = fun.mergeSort(os.listdir(os.path.join(source_path, character)))
+    print(character)
+    for match in matches:
+        screenshot = cv2.imread(os.path.join(source_path, character, match))
+        character_image = screenshot[138 : 138 + 255, res.LEFT_EDGE[players-2][0] : res.RIGHT_EDGE[players-2][0]]
+        try:
+            os.mkdir(os.path.join(output_path, character))
+        except Exception:
+            pass
+        cv2.imwrite(os.path.join(output_path, character, match[:-4] + ".png"), character_image)
 
 # matches = fun.mergeSort(os.listdir(source_path))
 # for match in matches:
@@ -64,19 +81,19 @@ CHARACTER_NAMES = fun.readTSV(r'C:\Users\franc\Documents\VSCode\SmashDataCollect
 #         already_existing = len(os.listdir(folder_path))
 #         cv2.imwrite(os.path.join(folder_path, str(already_existing) + ".png"), character_image)
 
-for name in CHARACTER_NAMES:
-    print(name[1], end='')
-    character_folder = os.path.join(output_path, name[1])
-    if(os.path.isdir(character_folder) == False):
-        print(f', not found.')
-        continue
-    files = os.listdir(character_folder)
-    if(len(files) == 1):
-        os.rename(os.path.join(character_folder, "0.png"), os.path.join(character_folder, "01234567.png"))
-    elif(len(files) == 2):
-        os.rename(os.path.join(character_folder, "0.png"), os.path.join(character_folder, "0246.png"))
-        os.rename(os.path.join(character_folder, "1.png"), os.path.join(character_folder, "1357.png"))
-    print(', ok.')
+# for name in CHARACTER_NAMES:
+#     print(name[1], end='')
+#     character_folder = os.path.join(output_path, name[1])
+#     if(os.path.isdir(character_folder) == False):
+#         print(f', not found.')
+#         continue
+#     files = os.listdir(character_folder)
+#     if(len(files) == 1):
+#         os.rename(os.path.join(character_folder, "0.png"), os.path.join(character_folder, "01234567.png"))
+#     elif(len(files) == 2):
+#         os.rename(os.path.join(character_folder, "0.png"), os.path.join(character_folder, "0246.png"))
+#         os.rename(os.path.join(character_folder, "1.png"), os.path.join(character_folder, "1357.png"))
+#     print(', ok.')
 
 
 #--- CONCLUSION ---#
