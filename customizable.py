@@ -1,6 +1,6 @@
-DATA_PATH = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\data-demo'
+DATA_PATH = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\data'
 RES_PATH = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res'
-OUTPUT_PATH = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\output-demo.tsv'
+OUTPUT_PATH = r'C:\Users\franc\Documents\VSCode\SmashDataCollector\output.tsv'
 
 LIVES = 3
 

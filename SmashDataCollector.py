@@ -207,8 +207,8 @@ for match_index in range(tot_matches):
         taken_given_dmg_difference = 0
         for curr_player_index in range(players_amount):
             taken_given_dmg_difference += taken_damages[curr_player_index] - given_damages[curr_player_index]
-        if(taken_given_dmg_difference < 0 or taken_given_dmg_difference >= custom.TAKEN_GIVEN_DMG_THRESHOLD):
-            error_message = f'too big of a difference between total taken damage and total given damage ({taken_given_dmg_difference})'
+        if((taken_given_dmg_difference < 0 or taken_given_dmg_difference >= custom.TAKEN_GIVEN_DMG_THRESHOLD) and (("Ice Climbers" in [res.CHARACTER_INFOS[index][0] for index in character_indices]) == False)):
+            error_message = f'too big of a difference between total taken damage and total given damage ({taken_given_dmg_difference}, taken damages: {taken_damages}, given damages: {given_damages})'
             raise fun.InvalidData
 
 
@@ -262,8 +262,8 @@ if(len(problematic_matches) > 0):
                         regex = f'({")|(".join([name[0].upper() for name in res.CHARACTER_INFOS])})'
                         player_character = fun.readInput(f'Enter P{curr_player_index+1} character (in English): ', regex)
                         for name in res.CHARACTER_INFOS:
-                            if(name[0] == player_character.upper()):
-                                player_character = name[1]
+                            if(name[0].upper() == player_character.upper()):
+                                player_character = name[0]
                                 break
                         character_indices.append(player_character)
 
@@ -328,8 +328,11 @@ if(len(problematic_matches) > 0):
                     for curr_player_index in range(players_amount):
                         taken_given_dmg_difference += taken_damages[curr_player_index] - given_damages[curr_player_index]
                     if(taken_given_dmg_difference < 0 or taken_given_dmg_difference >= custom.TAKEN_GIVEN_DMG_THRESHOLD):
-                        error_message = f'too big of a difference between total taken damage and total given damage ({taken_given_dmg_difference})'
-                        raise fun.InvalidData
+                        print(f'The damage values inserted seem a bit odd ({taken_given_dmg_difference}). Check again the values. If the values are correct, reply "yes" and the data will be added. If the values aren\'t correct, reply "no" and add the data again.')
+                        reply = fun.readInput('Are the damages value correct [yes/no]? ', "(YES)|(NO)")
+                        if(reply == "NO"):
+                            error_message = f'too big of a difference between total taken damage and total given damage ({taken_given_dmg_difference})'
+                            raise fun.InvalidData
 
 
                     #--- CONVERT MATCH DATA TO A STRING ---#
