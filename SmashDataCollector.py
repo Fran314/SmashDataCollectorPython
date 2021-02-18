@@ -225,8 +225,8 @@ if(len(problematic_matches) > 0):
     #--- HALFWAY CHECKUP ---#
     print(f'elapsed time: {(time.time() - t):.3f} s')
 
-    #--- WRITE TEMPORARY OUTPUT ---#
-    output_file = open(custom.OUTPUT_PATH, 'w')
+    #--- WRITE PARTIAL OUTPUT ---#
+    output_file = open(custom.PARTIAL_OUTPUT_PATH, 'w')
     for match in output_strings[:-1]:
         output_file.write(match)
         output_file.write("\n")

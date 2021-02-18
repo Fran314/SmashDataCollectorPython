@@ -3,3 +3,8 @@
 
 # Python
 __pycache__
+
+#My Stuff
+data
+output.tsv
+output-part.tsv

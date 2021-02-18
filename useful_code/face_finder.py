@@ -7,6 +7,7 @@ import pytesseract
 from cv2 import cv2
 import re
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+# pylint: disable=import-error
 import functions as fun
 import resources as res
 

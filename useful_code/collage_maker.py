@@ -2,6 +2,7 @@ import os, sys
 import cv2
 import numpy
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+# pylint: disable=import-error
 import functions as fun
 
 character_infos = fun.readTSV(r'C:\Users\franc\Documents\VSCode\SmashDataCollector\res\character_references\characters_info.tsv')
