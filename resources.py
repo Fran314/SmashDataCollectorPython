@@ -96,16 +96,32 @@ SMALL_DIGIT_WIDTH = 17
 SMALL_DIGIT_HEIGHT = 21
 SMALL_DIGIT_SEP = 19.5
 SMALL_DIGIT_IMAGES = []
+MIN_SMALL_DIGIT_IMAGES = []
+MAX_SMALL_DIGIT_IMAGES = []
 digits_tile = cv2.cvtColor(cv2.imread(os.path.join(RES_PATH, "digits", "small_digits.png")), cv2.COLOR_BGR2GRAY)
 for i in range(11):
     SMALL_DIGIT_IMAGES.append(digits_tile[:, i*SMALL_DIGIT_WIDTH : (i+1)*SMALL_DIGIT_WIDTH].copy())
+digits_tile = cv2.cvtColor(cv2.imread(os.path.join(RES_PATH, "digits", "min_small_digits.png")), cv2.COLOR_BGR2GRAY)
+for i in range(10):
+    MIN_SMALL_DIGIT_IMAGES.append(digits_tile[:, i*SMALL_DIGIT_WIDTH : (i+1)*SMALL_DIGIT_WIDTH].copy())
+digits_tile = cv2.cvtColor(cv2.imread(os.path.join(RES_PATH, "digits", "max_small_digits.png")), cv2.COLOR_BGR2GRAY)
+for i in range(10):
+    MAX_SMALL_DIGIT_IMAGES.append(digits_tile[:, i*SMALL_DIGIT_WIDTH : (i+1)*SMALL_DIGIT_WIDTH].copy())
 
 BIG_DIGIT_WIDTH = 44
 BIG_DIGIT_HEIGHT = 63
 BIG_DIGIT_IMAGES = []
+MIN_BIG_DIGIT_IMAGES = []
+MAX_BIG_DIGIT_IMAGES = []
 digits_tile = cv2.cvtColor(cv2.imread(os.path.join(RES_PATH, "digits", "big_digits.png")), cv2.COLOR_BGR2GRAY)
 for i in range(12):
     BIG_DIGIT_IMAGES.append(digits_tile[:, i*BIG_DIGIT_WIDTH : (i+1)*BIG_DIGIT_WIDTH].copy())
+digits_tile = cv2.cvtColor(cv2.imread(os.path.join(RES_PATH, "digits", "min_big_digits.png")), cv2.COLOR_BGR2GRAY)
+for i in range(10):
+    MIN_BIG_DIGIT_IMAGES.append(digits_tile[:, i*BIG_DIGIT_WIDTH : (i+1)*BIG_DIGIT_WIDTH].copy())
+digits_tile = cv2.cvtColor(cv2.imread(os.path.join(RES_PATH, "digits", "max_big_digits.png")), cv2.COLOR_BGR2GRAY)
+for i in range(10):
+    MAX_BIG_DIGIT_IMAGES.append(digits_tile[:, i*BIG_DIGIT_WIDTH : (i+1)*BIG_DIGIT_WIDTH].copy())
 
 
 POLARIZATION_THRESHOLD = 40

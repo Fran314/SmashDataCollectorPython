@@ -100,6 +100,18 @@ def getClosestDigit(image, digit_images):
     digit = numpy.argmin(distances)
     return digit-1
 
+def getMinMaxDigit(image, min_digits, max_digits):
+    has_min = [(min <= image).all() for min in min_digits]
+    is_in_max = [(image <= max).all() for max in max_digits]
+    valid = -1
+    for i in range(10):
+        if(has_min[i] and is_in_max[i]):
+            if(valid == -1):
+                valid = i
+            else:
+                return -1
+    return valid
+
 def getClosestLanguageType(image, languages):
     distances = []
     for i in range(len(languages)):

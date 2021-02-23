@@ -156,7 +156,11 @@ for match_index in range(tot_matches):
             digit_x = res.RIGHT_EDGE[players_amount-2][curr_player_index] + res.SELFDESTR_RD[language]
             digit_image = fun.submat(second_data, digit_y, digit_x, res.SMALL_DIGIT_HEIGHT, res.SMALL_DIGIT_WIDTH)
             digit_image = fun.polarizeImage(digit_image, res.POLARIZATION_THRESHOLD)
-            curr_selfdestruct = fun.getClosestDigit(digit_image, res.SMALL_DIGIT_IMAGES)
+            # curr_selfdestruct = fun.getClosestDigit(digit_image, res.SMALL_DIGIT_IMAGES)
+            curr_selfdestruct = fun.getMinMaxDigit(digit_image, res.MIN_SMALL_DIGIT_IMAGES, res.MAX_SMALL_DIGIT_IMAGES)
+            if(curr_selfdestruct == -1):
+                error_message = f'unable to read P{curr_player_index+1}\'s selfdestructs'
+                raise fun.InvalidData
             for j in range(curr_selfdestruct):
                 curr_fall_list.append(curr_player_index+1)
 
@@ -164,10 +168,10 @@ for match_index in range(tot_matches):
 
             #--- FALLS AND SELFDESTRUCTS - ERROR CHECKING ---#
             if(places[curr_player_index] != 1 and len(curr_fall_list) != custom.LIVES):
-                error_message = f'G{curr_player_index+1} (not in first place) died a number of times different from {custom.LIVES} ({curr_fall_list})'
+                error_message = f'P{curr_player_index+1} (not in first place) died a number of times different from {custom.LIVES} ({curr_fall_list})'
                 raise fun.InvalidData
             if(places[curr_player_index] == 1 and len(curr_fall_list) >= custom.LIVES):
-                error_message = f'G{curr_player_index+1} (in first place) died more than {custom.LIVES-1} times ({curr_fall_list})'
+                error_message = f'P{curr_player_index+1} (in first place) died more than {custom.LIVES-1} times ({curr_fall_list})'
                 raise fun.InvalidData
 
 
@@ -180,7 +184,8 @@ for match_index in range(tot_matches):
             while(digit != -1):
                 digit_image = fun.submat(second_data, digit_y, int(digit_x), res.SMALL_DIGIT_HEIGHT, res.SMALL_DIGIT_WIDTH)
                 digit_image = fun.polarizeImage(digit_image, res.POLARIZATION_THRESHOLD)
-                digit = fun.getClosestDigit(digit_image, res.SMALL_DIGIT_IMAGES)
+                # digit = fun.getClosestDigit(digit_image, res.SMALL_DIGIT_IMAGES)
+                digit = fun.getMinMaxDigit(digit_image, res.MIN_SMALL_DIGIT_IMAGES, res.MAX_SMALL_DIGIT_IMAGES)
                 if(digit != -1):
                     given_damage += digit*decimal_place
                 digit_x -= res.SMALL_DIGIT_SEP
@@ -196,7 +201,8 @@ for match_index in range(tot_matches):
             while(digit != -1):
                 digit_image = fun.submat(second_data, digit_y, int(digit_x), res.SMALL_DIGIT_HEIGHT, res.SMALL_DIGIT_WIDTH)
                 digit_image = fun.polarizeImage(digit_image, res.POLARIZATION_THRESHOLD)
-                digit = fun.getClosestDigit(digit_image, res.SMALL_DIGIT_IMAGES)
+                # digit = fun.getClosestDigit(digit_image, res.SMALL_DIGIT_IMAGES)
+                digit = fun.getMinMaxDigit(digit_image, res.MIN_SMALL_DIGIT_IMAGES, res.MAX_SMALL_DIGIT_IMAGES)
                 if(digit != -1):
                     taken_damage += digit*decimal_place
                 digit_x -= res.SMALL_DIGIT_SEP
@@ -297,13 +303,13 @@ if(len(problematic_matches) > 0):
                         for j in range(len(player_falls_string)):
                             if(j % 2 == 0):
                                 fall_list.append(int(player_falls_string[j]))
-                        falls.append(fall_list)
 
                         #--- GET PLAYER SELFDESTRUCTS --#
                         regex = f'[0-{custom.LIVES}]'
                         player_selfdestruct_string = fun.readInput(f'Enter P{curr_player_index+1} selfdestructs: ', regex)
                         for j in range(int(player_selfdestruct_string)):
                             fall_list.append(curr_player_index+1)
+                        falls.append(fall_list)
 
                         #--- ERROR CHECKING ---#
                         if(positions[curr_player_index] != 1 and len(fall_list) != custom.LIVES):
